@@ -1,0 +1,44 @@
+# Optional local helpers only — Postgres is NOT here.
+# Use your installed PostgreSQL on port 5432.
+name: reloom
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: reloom-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - reloom_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.12
+    container_name: reloom-meili
+    restart: unless-stopped
+    ports:
+      - "7700:7700"
+    environment:
+      MEILI_ENV: development
+      MEILI_MASTER_KEY: reloom_meili_master_dev_key_change_me
+      MEILI_NO_ANALYTICS: "true"
+    volumes:
+      - reloom_meili_data:/meili_data
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: reloom-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  reloom_redis_data:
+  reloom_meili_data:

@@ -1,0 +1,78 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ProductsService } from './products.service';
+import { CreateProductDto, UpdateProductDto, SearchProductsDto } from './dto/product.dto';
+import { Public } from '../../common/decorators/public.decorator';
+import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
+import { PaginationDto } from '../../common/dto/pagination.dto';
+
+@ApiTags('Products')
+@Controller({ path: 'products', version: '1' })
+export class ProductsController {
+  constructor(private readonly products: ProductsService) {}
+
+  @Public()
+  @Get()
+  @ApiOperation({ summary: 'Search & filter products' })
+  search(@Query() query: SearchProductsDto) {
+    return this.products.search(query);
+  }
+
+  @Get('me/listings')
+  @ApiBearerAuth()
+  myListings(
+    @CurrentUser() user: AuthUser,
+    @Query() q: PaginationDto,
+    @Query('status') status?: string,
+  ) {
+    return this.products.myListings(user.id, q.page, q.limit, status);
+  }
+
+  @Public()
+  @Get(':id/related')
+  related(@Param('id') id: string) {
+    return this.products.related(id);
+  }
+
+  @Public()
+  @Get(':slug')
+  @ApiOperation({ summary: 'Get product by slug' })
+  findOne(
+    @Param('slug') slug: string,
+    @CurrentUser() user?: AuthUser,
+  ) {
+    return this.products.findBySlug(slug, user?.id);
+  }
+
+  @Post()
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create product listing' })
+  create(@CurrentUser() user: AuthUser, @Body() dto: CreateProductDto) {
+    return this.products.create(user.id, dto);
+  }
+
+  @Patch(':id')
+  @ApiBearerAuth()
+  update(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateProductDto,
+  ) {
+    return this.products.update(user.id, id, dto);
+  }
+
+  @Delete(':id')
+  @ApiBearerAuth()
+  remove(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.products.remove(user.id, id);
+  }
+}
