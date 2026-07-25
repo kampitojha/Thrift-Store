@@ -9,11 +9,17 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
 import { ProductsService } from './products.service';
 import { CreateProductDto, UpdateProductDto, SearchProductsDto } from './dto/product.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
+
+class ReportProductDto {
+  @IsString() reason!: string;
+  @IsOptional() @IsString() details?: string;
+}
 
 @ApiTags('Products')
 @Controller({ path: 'products', version: '1' })
@@ -74,5 +80,42 @@ export class ProductsController {
   @ApiBearerAuth()
   remove(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.products.remove(user.id, id);
+  }
+
+  @Post(':id/duplicate')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Duplicate a listing' })
+  duplicate(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.products.duplicate(user.id, id);
+  }
+
+  @Post(':id/publish')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Publish/unpublish a listing' })
+  publish(@CurrentUser() user: AuthUser, @Param('id') id: string, @Body('publish') publish: boolean) {
+    return this.products.setPublishStatus(user.id, id, publish);
+  }
+
+  @Post(':id/mark-sold')
+  @ApiBearerAuth()
+  markSold(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.products.markSold(user.id, id);
+  }
+
+  @Post(':id/restore')
+  @ApiBearerAuth()
+  restore(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.products.restore(user.id, id);
+  }
+
+  @Post(':id/report')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Report a product' })
+  report(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: ReportProductDto,
+  ) {
+    return this.products.report(user.id, id, dto.reason, dto.details);
   }
 }

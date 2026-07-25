@@ -25,6 +25,18 @@ import { AdminModule } from './modules/admin/admin.module';
 import { CmsModule } from './modules/cms/cms.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { HealthModule } from './modules/health/health.module';
+import { SessionsModule } from './modules/sessions/sessions.module';
+import { TwoFactorModule } from './modules/two-factor/two-factor.module';
+import { CouponsModule } from './modules/coupons/coupons.module';
+import { ShippingModule } from './modules/shipping/shipping.module';
+import { ReportsModule } from './modules/reports/reports.module';
+import { ReturnsModule } from './modules/returns/returns.module';
+import { DisputesModule } from './modules/disputes/disputes.module';
+import { AddressesModule } from './modules/addresses/addresses.module';
+import { CheckoutModule } from './modules/checkout/checkout.module';
+import { InvoicesModule } from './modules/invoices/invoices.module';
+import { PayoutsModule } from './modules/payouts/payouts.module';
+import { RefundsModule } from './modules/refunds/refunds.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 
 @Module({
@@ -63,6 +75,18 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
     AdminModule,
     CmsModule,
     UploadsModule,
+    SessionsModule,
+    TwoFactorModule,
+    CouponsModule,
+    ShippingModule,
+    ReportsModule,
+    ReturnsModule,
+    DisputesModule,
+    AddressesModule,
+    CheckoutModule,
+    InvoicesModule,
+    PayoutsModule,
+    RefundsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

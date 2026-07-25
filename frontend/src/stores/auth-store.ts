@@ -19,12 +19,13 @@ type AuthState = {
   refreshToken: string | null;
   isHydrated: boolean;
   setHydrated: (v: boolean) => void;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   register: (data: {
     email: string;
     password: string;
     username: string;
     displayName?: string;
+    referralCode?: string;
   }) => Promise<void>;
   logout: () => Promise<void>;
   setSession: (payload: {
@@ -45,19 +46,16 @@ export const useAuthStore = create<AuthState>()(
       setHydrated: (v) => set({ isHydrated: v }),
 
       setSession: ({ user, accessToken, refreshToken }) => {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('reloom_access_token', accessToken);
-          localStorage.setItem('reloom_refresh_token', refreshToken);
-        }
+        apiClient.setTokens(accessToken, refreshToken);
         set({ user, accessToken, refreshToken });
       },
 
-      login: async (email, password) => {
+      login: async (email, password, rememberMe) => {
         const res = await apiClient.post<{
           user: AuthUser;
           accessToken: string;
           refreshToken: string;
-        }>('/auth/login', { email, password }, { token: null });
+        }>('/auth/login', { email, password, rememberMe }, { token: null });
         get().setSession(res);
       },
 
@@ -74,15 +72,12 @@ export const useAuthStore = create<AuthState>()(
         const { accessToken, refreshToken } = get();
         try {
           if (accessToken) {
-            await apiClient.post('/auth/logout', { refreshToken }, { token: accessToken });
+            await apiClient.post('/auth/logout', { refreshToken }, { token: accessToken, skipRefresh: true });
           }
         } catch {
           /* ignore */
         }
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('reloom_access_token');
-          localStorage.removeItem('reloom_refresh_token');
-        }
+        apiClient.clearTokens();
         set({ user: null, accessToken: null, refreshToken: null });
       },
 
@@ -106,10 +101,16 @@ export const useAuthStore = create<AuthState>()(
       }),
       onRehydrateStorage: () => (state) => {
         if (state?.accessToken && typeof window !== 'undefined') {
-          localStorage.setItem('reloom_access_token', state.accessToken);
+          apiClient.setTokens(state.accessToken, state.refreshToken || '');
         }
         state?.setHydrated(true);
       },
     },
   ),
 );
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('auth:logout', () => {
+    useAuthStore.getState().logout();
+  });
+}

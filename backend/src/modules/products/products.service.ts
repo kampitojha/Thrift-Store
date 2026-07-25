@@ -349,6 +349,130 @@ export class ProductsService {
     return items.map(this.toCard);
   }
 
+  async duplicate(sellerId: string, id: string) {
+    const product = await this.prisma.product.findFirst({
+      where: { id, sellerId, deletedAt: null },
+      include: { media: true },
+    });
+    if (!product) throw new NotFoundException('Product not found');
+
+    const slug = uniqueSlug(product.title);
+    const newProduct = await this.prisma.product.create({
+      data: {
+        sellerId,
+        title: `${product.title} (copy)`,
+        slug,
+        description: product.description,
+        categoryId: product.categoryId,
+        brandId: product.brandId,
+        gender: product.gender,
+        condition: product.condition,
+        color: product.color,
+        material: product.material,
+        size: product.size,
+        weightGrams: product.weightGrams,
+        pricePaise: product.pricePaise,
+        originalPricePaise: product.originalPricePaise,
+        quantity: product.quantity,
+        tags: product.tags,
+        allowsPickup: product.allowsPickup,
+        allowsShipping: product.allowsShipping,
+        returnPolicyDays: product.returnPolicyDays,
+        city: product.city,
+        state: product.state,
+        country: product.country,
+        status: 'DRAFT',
+        media: {
+          create: product.media.map((m, i) => ({
+            url: m.url,
+            type: m.type,
+            isPrimary: m.isPrimary,
+            sortOrder: i,
+            altText: m.altText,
+          })),
+        },
+      },
+      include: { media: true, brand: true, category: true },
+    });
+
+    return newProduct;
+  }
+
+  async setPublishStatus(sellerId: string, id: string, publish: boolean) {
+    const product = await this.prisma.product.findFirst({
+      where: { id, sellerId, deletedAt: null },
+    });
+    if (!product) throw new NotFoundException('Product not found');
+
+    const status = publish ? 'ACTIVE' : 'DRAFT';
+    const updated = await this.prisma.product.update({
+      where: { id },
+      data: {
+        status,
+        publishedAt: publish ? new Date() : null,
+      },
+      include: { media: true, brand: true, category: true },
+    });
+
+    await this.redis.del(`product:slug:${updated.slug}`);
+    if (publish) {
+      await this.searchService.indexProduct(id).catch(() => undefined);
+    } else {
+      await this.searchService.removeProduct(id).catch(() => undefined);
+    }
+
+    return updated;
+  }
+
+  async markSold(sellerId: string, id: string) {
+    const product = await this.prisma.product.findFirst({
+      where: { id, sellerId, deletedAt: null },
+    });
+    if (!product) throw new NotFoundException('Product not found');
+
+    const updated = await this.prisma.product.update({
+      where: { id },
+      data: { status: 'SOLD', soldAt: new Date() },
+    });
+
+    await this.redis.del(`product:slug:${updated.slug}`);
+    await this.searchService.removeProduct(id).catch(() => undefined);
+
+    return updated;
+  }
+
+  async restore(sellerId: string, id: string) {
+    const product = await this.prisma.product.findFirst({
+      where: { id, sellerId },
+    });
+    if (!product) throw new NotFoundException('Product not found');
+
+    const updated = await this.prisma.product.update({
+      where: { id },
+      data: {
+        deletedAt: null,
+        status: product.status === 'ARCHIVED' ? 'DRAFT' : product.status,
+      },
+    });
+
+    return updated;
+  }
+
+  async report(reporterId: string, productId: string, reason: string, details?: string) {
+    const product = await this.prisma.product.findUnique({ where: { id: productId } });
+    if (!product) throw new NotFoundException('Product not found');
+
+    return this.prisma.report.create({
+      data: {
+        reporterId,
+        productId,
+        reason: reason as never,
+        details,
+        status: 'PENDING',
+      },
+    });
+  }
+
   private async recordView(productId: string, userId?: string) {
     await this.prisma.$transaction([
       this.prisma.product.update({

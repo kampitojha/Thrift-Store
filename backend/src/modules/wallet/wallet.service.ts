@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { paginate, paginationMeta } from '../../common/dto/pagination.dto';
 
@@ -9,7 +9,7 @@ export class WalletService {
   async get(userId: string) {
     const wallet = await this.prisma.wallet.upsert({
       where: { userId },
-      create: { userId },
+      create: { userId, balancePaise: BigInt(0), heldPaise: BigInt(0) },
       update: {},
     });
     return {
@@ -49,6 +49,9 @@ export class WalletService {
     if (!seller) throw new BadRequestException('Seller profile required');
     if (!seller.bankVerified) throw new BadRequestException('Bank verification required');
 
+    const MIN_PAYOUT = 10000;
+    if (amountPaise < MIN_PAYOUT) throw new BadRequestException(`Minimum payout is ₹${MIN_PAYOUT / 100}`);
+
     const wallet = await this.prisma.wallet.findUnique({ where: { userId } });
     if (!wallet || wallet.balancePaise < BigInt(amountPaise)) {
       throw new BadRequestException('Insufficient balance');
@@ -62,7 +65,7 @@ export class WalletService {
           sellerProfileId: seller.id,
           amountPaise: BigInt(amountPaise),
           status: 'PENDING',
-          method: 'bank',
+          method: 'UPI',
           destinationMask: seller.bankAccountMasked,
         },
       }),
@@ -76,14 +79,66 @@ export class WalletService {
           type: 'PAYOUT',
           amountPaise: BigInt(amountPaise),
           balanceAfter: newBalance,
-          description: 'Payout request',
+          reference: '', description: 'Payout requested',
         },
       }),
     ]);
 
-    return {
-      ...payout,
-      amountPaise: payout.amountPaise.toString(),
-    };
+    return { ...payout, amountPaise: payout.amountPaise.toString() };
+  }
+
+  async holdAmount(sellerId: string, orderId: string, amountPaise: number) {
+    const wallet = await this.prisma.wallet.upsert({
+      where: { userId: sellerId },
+      create: { userId: sellerId, balancePaise: BigInt(0), heldPaise: BigInt(0) },
+      update: {},
+    });
+    if (wallet.balancePaise < BigInt(amountPaise)) return;
+    await this.prisma.wallet.update({
+      where: { id: wallet.id },
+      data: { balancePaise: { decrement: BigInt(amountPaise) }, heldPaise: { increment: BigInt(amountPaise) } },
+    });
+    await this.prisma.walletTransaction.create({
+      data: {
+        walletId: wallet.id, type: 'HOLD', amountPaise: BigInt(amountPaise),
+        balanceAfter: wallet.balancePaise - BigInt(amountPaise),
+        reference: orderId, description: 'Funds held pending resolution',
+      },
+    });
+  }
+
+  async releaseHold(sellerId: string, orderId: string) {
+    const heldTxns = await this.prisma.walletTransaction.findMany({
+      where: { reference: orderId, type: 'HOLD' },
+    });
+    for (const txn of heldTxns) {
+      const wallet = await this.prisma.wallet.findUnique({ where: { id: txn.walletId } });
+      if (!wallet) continue;
+      await this.prisma.wallet.update({
+        where: { id: wallet.id },
+        data: { balancePaise: { increment: txn.amountPaise }, heldPaise: { decrement: txn.amountPaise } },
+      });
+      await this.prisma.walletTransaction.create({
+        data: {
+          walletId: wallet.id, type: 'RELEASE', amountPaise: txn.amountPaise,
+          balanceAfter: wallet.balancePaise + txn.amountPaise,
+          reference: orderId, description: 'Hold released',
+        },
+      });
+    }
+  }
+
+  async credit(userId: string, amountPaise: number, reference: string, description: string) {
+    const wallet = await this.prisma.wallet.upsert({
+      where: { userId },
+      create: { userId, balancePaise: BigInt(amountPaise), heldPaise: BigInt(0) },
+      update: { balancePaise: { increment: BigInt(amountPaise) } },
+    });
+    return this.prisma.walletTransaction.create({
+      data: {
+        walletId: wallet.id, type: 'CREDIT', amountPaise: BigInt(amountPaise),
+        balanceAfter: wallet.balancePaise, reference, description,
+      },
+    });
   }
 }

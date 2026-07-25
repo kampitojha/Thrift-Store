@@ -226,6 +226,100 @@ export class AuthService {
     return { ok: true };
   }
 
+  async verifyEmail(token: string) {
+    const userId = await this.redis.get<string>(`email_verify:${token}`);
+    if (!userId) throw new BadRequestException('Invalid or expired verification token');
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { emailVerifiedAt: new Date(), status: 'ACTIVE' },
+    });
+    await this.redis.del(`email_verify:${token}`);
+    return { ok: true };
+  }
+
+  async resendVerification(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+    if (!user || user.emailVerifiedAt) return { ok: true };
+    const token = randomBytes(32).toString('hex');
+    await this.redis.set(`email_verify:${token}`, user.id, 86400);
+    this.logger.log(`Verification email for ${email}: ${token.slice(0, 8)}...`);
+    return { ok: true };
+  }
+
+  async socialLogin(profile: { email: string; firstName?: string; lastName?: string; googleId?: string; appleId?: string }) {
+    const { email, firstName, lastName, googleId, appleId } = profile;
+    if (!email) throw new BadRequestException('Email required for social login');
+
+    let user = await this.prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+    if (!user) {
+      const baseUsername = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_').slice(0, 20);
+      const username = await this.generateUniqueUsername(baseUsername);
+      user = await this.prisma.user.create({
+        data: {
+          email: email.toLowerCase(),
+          username,
+          displayName: `${firstName || ''} ${lastName || ''}`.trim() || username,
+          role: 'BUYER',
+          status: 'ACTIVE',
+          emailVerifiedAt: new Date(),
+          avatarUrl: undefined,
+          profile: { create: {} },
+          wallet: { create: {} },
+          loyaltyAccount: { create: {} },
+          cart: { create: {} },
+        },
+      });
+    } else if (!user.emailVerifiedAt) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerifiedAt: new Date(), status: 'ACTIVE' },
+      });
+    }
+
+    const tokens = await this.issueTokens({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      username: user.username,
+    });
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        displayName: user.displayName,
+        role: user.role,
+        avatarUrl: user.avatarUrl,
+      },
+      ...tokens,
+    };
+  }
+
+  async loginHistory(userId: string) {
+    return this.prisma.loginHistory.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      select: {
+        id: true,
+        ipAddress: true,
+        userAgent: true,
+        location: true,
+        success: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  private async generateUniqueUsername(base: string): Promise<string> {
+    const suffix = randomBytes(3).toString('hex');
+    const username = `${base}_${suffix}`;
+    const exists = await this.prisma.user.findUnique({ where: { username } });
+    if (exists) return this.generateUniqueUsername(base);
+    return username;
+  }
+
   async me(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },

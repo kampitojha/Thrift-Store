@@ -8,6 +8,12 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { paginate, paginationMeta } from '../../common/dto/pagination.dto';
 
+const DEFAULT_NOTIF_PREFS = {
+  email: { marketing: false, orderUpdates: true, messages: true, sellerAlerts: true },
+  push: { messages: true, orderUpdates: true, favorites: false },
+  sms: { orderUpdates: false, marketing: false },
+};
+
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -165,6 +171,160 @@ export class UsersService {
       where: { userId },
       orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
     });
+  }
+
+  // ── Notification Preferences ──
+
+  async getNotificationPrefs(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { metadata: true },
+    });
+    const meta = (user?.metadata as Record<string, unknown>) || {};
+    return (meta.notificationPrefs as Record<string, unknown>) || DEFAULT_NOTIF_PREFS;
+  }
+
+  async updateNotificationPrefs(userId: string, prefs: Record<string, unknown>) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { metadata: true },
+    });
+    const meta = (user?.metadata as Record<string, unknown>) || {};
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { metadata: { ...meta, notificationPrefs: prefs } as any },
+    });
+    return { ok: true };
+  }
+
+  // ── Privacy Settings ──
+
+  async getPrivacySettings(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { metadata: true },
+    });
+    const meta = (user?.metadata as Record<string, unknown>) || {};
+    const privacy = (meta.privacySettings as Record<string, unknown>) || {};
+    return {
+      profileVisibility: (privacy.profileVisibility as string) || 'public',
+      showLikes: (privacy.showLikes as boolean) ?? true,
+      showSoldItems: (privacy.showSoldItems as boolean) ?? true,
+      blockedUsers: (privacy.blockedUsers as string[]) || [],
+    };
+  }
+
+  async updatePrivacySettings(userId: string, settings: Record<string, unknown>) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { metadata: true },
+    });
+    const meta = (user?.metadata as Record<string, unknown>) || {};
+    const privacy = (meta.privacySettings as Record<string, unknown>) || {};
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        metadata: {
+          ...meta,
+          privacySettings: { ...privacy, ...settings },
+        } as any,
+      },
+    });
+    return { ok: true };
+  }
+
+  // ── Block/Unblock ──
+
+  async blockUser(userId: string, username: string) {
+    const target = await this.prisma.user.findUnique({
+      where: { username: username.toLowerCase() },
+    });
+    if (!target) throw new NotFoundException('User not found');
+    if (target.id === userId) throw new BadRequestException('Cannot block yourself');
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { metadata: true },
+    });
+    const meta = (user?.metadata as Record<string, unknown>) || {};
+    const privacy = (meta.privacySettings as Record<string, unknown>) || {};
+    const blocked: string[] = (privacy.blockedUsers as string[]) || [];
+    if (!blocked.includes(target.id)) {
+      blocked.push(target.id);
+    }
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        metadata: {
+          ...meta,
+          privacySettings: { ...privacy, blockedUsers: blocked },
+        } as any,
+      },
+    });
+    return { blocked: true };
+  }
+
+  async unblockUser(userId: string, username: string) {
+    const target = await this.prisma.user.findUnique({
+      where: { username: username.toLowerCase() },
+    });
+    if (!target) throw new NotFoundException('User not found');
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { metadata: true },
+    });
+    const meta = (user?.metadata as Record<string, unknown>) || {};
+    const privacy = (meta.privacySettings as Record<string, unknown>) || {};
+    const blocked: string[] = ((privacy.blockedUsers as string[]) || []).filter(
+      (id: string) => id !== target.id,
+    );
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        metadata: {
+          ...meta,
+          privacySettings: { ...privacy, blockedUsers: blocked },
+        } as any,
+      },
+    });
+    return { unblocked: true };
+  }
+
+  // ── Account Deletion ──
+
+  async deleteAccount(userId: string, reason?: string) {
+    await this.prisma.userSession.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        status: 'DELETED',
+        deletedAt: new Date(),
+        email: `deleted_${userId}@reloom.in`,
+        username: `deleted_${userId}`,
+        passwordHash: null,
+        metadata: reason ? { ...(await this.getMetadata(userId)), deleteReason: reason } : undefined,
+      },
+    });
+    await this.prisma.auditLog.create({
+      data: {
+        userId,
+        action: 'ACCOUNT_DELETED',
+        metadata: reason ? { reason } : undefined,
+      },
+    });
+    return { ok: true };
+  }
+
+  private async getMetadata(userId: string): Promise<Record<string, unknown>> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { metadata: true },
+    });
+    return ((user?.metadata as Record<string, unknown>) || {}) as Record<string, unknown>;
   }
 
   async addAddress(userId: string, data: Record<string, unknown>) {

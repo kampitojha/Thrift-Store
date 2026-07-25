@@ -1,38 +1,65 @@
 import { Hero } from '@/components/home/hero';
 import { CategoryRail } from '@/components/home/category-rail';
 import { ProductGridSection } from '@/components/home/product-grid-section';
+import { RecentlyViewedSection } from '@/components/home/recently-viewed-section';
 import { fetchHome, fetchProducts } from '@/lib/api';
 
 export const revalidate = 60;
 
 export default async function HomePage() {
   let home: Awaited<ReturnType<typeof fetchHome>> | null = null;
-  let products: Awaited<ReturnType<typeof fetchProducts>> | null = null;
+  let newest: Awaited<ReturnType<typeof fetchProducts>> | null = null;
+  let trending: Awaited<ReturnType<typeof fetchProducts>> | null = null;
+  let popular: Awaited<ReturnType<typeof fetchProducts>> | null = null;
 
   try {
-    [home, products] = await Promise.all([
+    [home, newest, trending, popular] = await Promise.all([
       fetchHome().catch(() => null),
       fetchProducts({ sort: 'newest', limit: 8 }).catch(() => null),
+      fetchProducts({ sort: 'trending', limit: 8 }).catch(() => null),
+      fetchProducts({ sort: 'popular', limit: 8 }).catch(() => null),
     ]);
-  } catch {
-    /* API offline — show marketing shell */
-  }
+  } catch { /* API offline */ }
 
-  const featured = home?.featured?.length
-    ? home.featured
-    : products?.data || DEMO_PRODUCTS;
-  const trending = home?.trending?.length ? home.trending : DEMO_PRODUCTS.slice().reverse();
+  const featured = home?.featured?.length ? home.featured : newest?.data || DEMO_PRODUCTS;
+  const trendingProducts = home?.trending?.length ? home.trending : trending?.data || DEMO_PRODUCTS.slice().reverse();
+  const popularProducts = popular?.data || [];
 
   return (
     <>
       <Hero />
       <CategoryRail categories={home?.categories} />
+
+      {/* Just dropped — Newest */}
       <ProductGridSection
         title="Just dropped"
         subtitle="Fresh listings from the community"
         products={featured}
         href="/browse?sort=newest"
       />
+
+      {/* Recently viewed — client component */}
+      <RecentlyViewedSection />
+
+      {/* Trending now */}
+      <ProductGridSection
+        title="Trending now"
+        subtitle="What everyone is viewing right now"
+        products={trendingProducts}
+        href="/browse?sort=trending"
+      />
+
+      {/* Popular this week */}
+      {popularProducts.length > 0 && (
+        <ProductGridSection
+          title="Popular this week"
+          subtitle="Most loved items on Reloom"
+          products={popularProducts}
+          href="/browse?sort=popular"
+        />
+      )}
+
+      {/* Sell CTA */}
       <section className="container-page py-6">
         <div className="overflow-hidden rounded-3xl bg-ink-900 px-8 py-12 text-center text-white sm:px-14 sm:py-16">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-300">
@@ -52,12 +79,6 @@ export default async function HomePage() {
           </a>
         </div>
       </section>
-      <ProductGridSection
-        title="Trending now"
-        subtitle="What everyone is viewing"
-        products={trending}
-        href="/browse?sort=trending"
-      />
     </>
   );
 }

@@ -52,4 +52,54 @@ export class UsersController {
   followers(@Param('username') username: string, @Query() q: PaginationDto) {
     return this.users.getFollowers(username, q.page, q.limit);
   }
+
+  // ── Notification Preferences ──
+
+  @Get('me/notification-preferences')
+  @ApiBearerAuth()
+  getNotificationPrefs(@CurrentUser() user: AuthUser) {
+    return this.users.getNotificationPrefs(user.id);
+  }
+
+  @Patch('me/notification-preferences')
+  @ApiBearerAuth()
+  updateNotificationPrefs(@CurrentUser() user: AuthUser, @Body() body: Record<string, unknown>) {
+    return this.users.updateNotificationPrefs(user.id, body);
+  }
+
+  // ── Privacy Settings ──
+
+  @Get('me/privacy-settings')
+  @ApiBearerAuth()
+  getPrivacySettings(@CurrentUser() user: AuthUser) {
+    return this.users.getPrivacySettings(user.id);
+  }
+
+  @Patch('me/privacy-settings')
+  @ApiBearerAuth()
+  updatePrivacySettings(@CurrentUser() user: AuthUser, @Body() body: Record<string, unknown>) {
+    return this.users.updatePrivacySettings(user.id, body);
+  }
+
+  // ── Block/Unblock ──
+
+  @Post('block')
+  @ApiBearerAuth()
+  blockUser(@CurrentUser() user: AuthUser, @Body() body: { username: string }) {
+    return this.users.blockUser(user.id, body.username);
+  }
+
+  @Post('unblock')
+  @ApiBearerAuth()
+  unblockUser(@CurrentUser() user: AuthUser, @Body() body: { username: string }) {
+    return this.users.unblockUser(user.id, body.username);
+  }
+
+  // ── Account Deletion ──
+
+  @Delete('me/account')
+  @ApiBearerAuth()
+  deleteAccount(@CurrentUser() user: AuthUser, @Body() body: { reason?: string }) {
+    return this.users.deleteAccount(user.id, body.reason);
+  }
 }

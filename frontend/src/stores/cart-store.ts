@@ -22,6 +22,7 @@ type CartState = {
   loading: boolean;
   fetchCart: () => Promise<void>;
   addItem: (productId: string, quantity?: number) => Promise<void>;
+  updateItem: (itemId: string, quantity: number) => Promise<void>;
   removeItem: (itemId: string) => Promise<void>;
   clear: () => void;
 };
@@ -63,6 +64,20 @@ export const useCartStore = create<CartState>((set) => ({
       itemCount: cart.itemCount,
       subtotalPaise: cart.subtotalPaise,
     });
+  },
+
+  updateItem: async (itemId, quantity) => {
+    if (quantity <= 0) {
+      const cart = await apiClient.delete<{
+        items: CartItem[]; itemCount: number; subtotalPaise: number;
+      }>(`/cart/items/${itemId}`);
+      set({ items: cart.items, itemCount: cart.itemCount, subtotalPaise: cart.subtotalPaise });
+    } else {
+      const cart = await apiClient.patch<{
+        items: CartItem[]; itemCount: number; subtotalPaise: number;
+      }>(`/cart/items/${itemId}`, { quantity });
+      set({ items: cart.items, itemCount: cart.itemCount, subtotalPaise: cart.subtotalPaise });
+    }
   },
 
   removeItem: async (itemId) => {

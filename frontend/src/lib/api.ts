@@ -1,8 +1,3 @@
-/**
- * Frontend API client — talks ONLY to NestJS backend over HTTP.
- * Never imports backend source code.
- */
-
 const API_BASE =
   typeof window === 'undefined'
     ? process.env.API_URL || 'http://localhost:4000'
@@ -28,16 +23,77 @@ type RequestOptions = {
   tags?: string[];
   revalidate?: number | false;
   cache?: RequestCache;
+  skipRefresh?: boolean;
 };
 
-function getToken(): string | null {
+function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('reloom_access_token');
+  try {
+    const raw = localStorage.getItem('reloom_access_token');
+    return raw;
+  } catch { return null; }
 }
 
-export async function api<T>(path: string, opts: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, token, tags, revalidate, cache } = opts;
-  const auth = token === undefined ? getToken() : token;
+function getRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return localStorage.getItem('reloom_refresh_token');
+  } catch { return null; }
+}
+
+function setTokens(access: string, refresh: string) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('reloom_access_token', access);
+  localStorage.setItem('reloom_refresh_token', refresh);
+}
+
+function clearTokens() {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem('reloom_access_token');
+  localStorage.removeItem('reloom_refresh_token');
+}
+
+let refreshPromise: Promise<{ accessToken: string; refreshToken: string } | null> | null = null;
+
+async function attemptRefresh(): Promise<{ accessToken: string; refreshToken: string } | null> {
+  const rt = getRefreshToken();
+  if (!rt) return null;
+
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    try {
+      const res = await fetch(`${API_BASE}${API_PREFIX}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ refreshToken: rt }),
+      });
+      if (!res.ok) {
+        clearTokens();
+        return null;
+      }
+      const json = await res.json();
+      const data = json?.data || json;
+      if (data.accessToken && data.refreshToken) {
+        setTokens(data.accessToken, data.refreshToken);
+        return data;
+      }
+      clearTokens();
+      return null;
+    } catch {
+      clearTokens();
+      return null;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
+async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
+  const { method = 'GET', body, token, tags, revalidate, cache, skipRefresh } = opts;
+  const auth = token === undefined ? getAccessToken() : token;
 
   const headers: HeadersInit = {
     Accept: 'application/json',
@@ -47,7 +103,7 @@ export async function api<T>(path: string, opts: RequestOptions = {}): Promise<T
 
   const url = path.startsWith('http') ? path : `${API_BASE}${API_PREFIX}${path}`;
 
-  const res = await fetch(url, {
+  let res = await fetch(url, {
     method,
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -61,6 +117,24 @@ export async function api<T>(path: string, opts: RequestOptions = {}): Promise<T
         : undefined,
   });
 
+  if (res.status === 401 && !skipRefresh && typeof window !== 'undefined') {
+    const refreshed = await attemptRefresh();
+    if (refreshed) {
+      headers['Authorization'] = `Bearer ${refreshed.accessToken}`;
+      res = await fetch(url, {
+        method,
+        headers,
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+        cache,
+      });
+    } else {
+      clearTokens();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth:logout'));
+      }
+    }
+  }
+
   const json = await res.json().catch(() => ({}));
 
   if (!res.ok) {
@@ -71,7 +145,6 @@ export async function api<T>(path: string, opts: RequestOptions = {}): Promise<T
     );
   }
 
-  // Nest interceptor wraps as { success, data }
   if (json && typeof json === 'object' && 'data' in json && 'success' in json) {
     return (json as { data: T }).data;
   }
@@ -79,15 +152,19 @@ export async function api<T>(path: string, opts: RequestOptions = {}): Promise<T
 }
 
 export const apiClient = {
-  get: <T>(path: string, opts?: RequestOptions) => api<T>(path, { ...opts, method: 'GET' }),
+  get: <T>(path: string, opts?: RequestOptions) => request<T>(path, { ...opts, method: 'GET' }),
   post: <T>(path: string, body?: unknown, opts?: RequestOptions) =>
-    api<T>(path, { ...opts, method: 'POST', body }),
+    request<T>(path, { ...opts, method: 'POST', body }),
   patch: <T>(path: string, body?: unknown, opts?: RequestOptions) =>
-    api<T>(path, { ...opts, method: 'PATCH', body }),
-  delete: <T>(path: string, opts?: RequestOptions) => api<T>(path, { ...opts, method: 'DELETE' }),
+    request<T>(path, { ...opts, method: 'PATCH', body }),
+  put: <T>(path: string, body?: unknown, opts?: RequestOptions) =>
+    request<T>(path, { ...opts, method: 'PUT', body }),
+  delete: <T>(path: string, opts?: RequestOptions) => request<T>(path, { ...opts, method: 'DELETE' }),
+  setTokens,
+  clearTokens,
+  getAccessToken,
+  getRefreshToken,
 };
-
-// ── Domain helpers ──────────────────────────────────────────────────────────
 
 export async function fetchHome() {
   return apiClient.get<{
@@ -123,6 +200,7 @@ export type ProductLike = {
   slug: string;
   pricePaise: number;
   originalPricePaise?: number | null;
+  status?: string;
   condition?: string;
   thumbnailUrl?: string | null;
   brandName?: string | null;

@@ -83,4 +83,55 @@ export class AuthController {
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.auth.resetPassword(dto.token, dto.password);
   }
+
+  @Public()
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  verifyEmail(@Body() dto: { token: string }) {
+    return this.auth.verifyEmail(dto.token);
+  }
+
+  @Public()
+  @Post('resend-verification')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
+  resendVerification(@Body() dto: { email: string }) {
+    return this.auth.resendVerification(dto.email);
+  }
+
+  @Public()
+  @Get('google')
+  @ApiOperation({ summary: 'Login with Google' })
+  googleAuth() {
+    // Redirects to Google OAuth — handled by passport
+    return { message: 'Redirecting to Google…' };
+  }
+
+  @Public()
+  @Get('google/callback')
+  @ApiOperation({ summary: 'Google OAuth callback' })
+  googleCallback(@Req() req: Request) {
+    return this.auth.socialLogin((req as any).user);
+  }
+
+  @Public()
+  @Get('apple')
+  @ApiOperation({ summary: 'Login with Apple' })
+  appleAuth() {
+    return { message: 'Redirecting to Apple…' };
+  }
+
+  @Public()
+  @Get('apple/callback')
+  @ApiOperation({ summary: 'Apple OAuth callback' })
+  appleCallback(@Req() req: Request) {
+    return this.auth.socialLogin((req as any).user);
+  }
+
+  @Get('login-history')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get login history' })
+  loginHistory(@CurrentUser() user: AuthUser) {
+    return this.auth.loginHistory(user.id);
+  }
 }
