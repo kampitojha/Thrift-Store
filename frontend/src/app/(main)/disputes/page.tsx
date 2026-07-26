@@ -34,7 +34,7 @@ export default function DisputesPage() {
     if (!user) { router.push('/sign-in'); return; }
     const endpoint = tab === 'my' ? '/disputes/my' : '/disputes/seller';
     apiClient.get<{ data: DisputeItem[] }>(endpoint)
-      .then((res) => setDisputes(res.data))
+      .then((res) => setDisputes(res.data ?? []))
       .catch((e) => setError(e instanceof ApiError ? e.message : 'Failed to load disputes'))
       .finally(() => setLoading(false));
   }, [user, router, tab]);

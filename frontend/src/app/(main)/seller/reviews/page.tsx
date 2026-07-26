@@ -59,16 +59,17 @@ export default function ReviewsPage() {
       const listingsParams = new URLSearchParams();
       listingsParams.set('page', '1');
       listingsParams.set('limit', '50');
-      const listings = await apiClient.get<{ data: { id: string; slug: string; title: string }[] }>(`/sellers/store/${dash.store.slug}/listings?${listingsParams}`);
-      const productIds = listings.data.map((p: { id: string }) => p.id);
+      const listingsRes = await apiClient.get<{ data: { id: string; slug: string; title: string }[] }>(`/sellers/store/${dash.store.slug}/listings?${listingsParams}`);
+      const listingsData = listingsRes.data ?? [];
+      const productIds = listingsData.map((p: { id: string }) => p.id);
       setStoreProducts(productIds);
 
       const allReviews: Review[] = [];
       for (const pid of productIds) {
         try {
           const res = await apiClient.get<ReviewsResponse>(`/reviews/product/${pid}?page=1&limit=20`);
-              const listing = listings.data.find((p) => p.id === pid);
-              allReviews.push(...res.data.map((r) => ({
+              const listing = listingsData.find((p) => p.id === pid);
+              allReviews.push(...(res.data ?? []).map((r) => ({
                 ...r,
                 product: listing ? { ...listing, images: [] as string[] } : undefined,
               })));

@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm run lint -- --max-warnings=0
+        working-directory: backend
+        continue-on-error: true
+
+  typecheck:
+    name: TypeScript Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm ci
+        working-directory: frontend
+      - run: npx prisma generate
+        working-directory: backend
+      - run: npm run typecheck
+        working-directory: backend
+      - run: npm run typecheck
+        working-directory: frontend
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: reloom
+          POSTGRES_PASSWORD: reloom_test
+          POSTGRES_DB: reloom_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npx prisma generate
+        working-directory: backend
+      - run: npx prisma migrate deploy
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://reloom:reloom_test@localhost:5432/reloom_test
+      - run: npm test -- --coverage
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://reloom:reloom_test@localhost:5432/reloom_test
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+          JWT_SECRET: test-jwt-secret-at-least-32-chars-long!!
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: backend/coverage/
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm ci
+        working-directory: frontend
+      - run: npx prisma generate
+        working-directory: backend
+      - run: npm run build
+        working-directory: backend
+      - run: npm run build
+        working-directory: frontend
+
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t reloom-backend:ci ./backend
+      - run: docker build -t reloom-frontend:ci ./frontend

@@ -44,8 +44,8 @@ export default function SellerDisputesPage() {
       params.set('page', String(page));
       params.set('limit', '20');
       const res = await apiClient.get<{ data: Dispute[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(`/disputes/seller?${params}`);
-      setDisputes(res.data);
-      setTotalPages(res.meta.totalPages);
+      setDisputes(res.data ?? []);
+      setTotalPages(res.meta?.totalPages ?? 1);
     } catch (e) { setError(e instanceof ApiError ? e.message : 'Failed to load disputes'); }
     finally { setLoading(false); }
   }, [page]);

@@ -101,7 +101,7 @@ export default function AdminUsersPage() {
         if (roleFilter) params.set('role', roleFilter);
         if (statusFilter) params.set('status', statusFilter);
         const res = await apiClient.get<UsersResponse>(`/admin/users?${params}`);
-        setUsers(res.data);
+        setUsers(res.data ?? []);
         setMeta(res.meta);
       } catch {
         setError('Failed to load users. Please try again.');

@@ -64,12 +64,13 @@ export default function CheckoutPage() {
     const init = async () => {
       try {
         const [addrRes, initRes] = await Promise.all([
-          apiClient.get<Address[]>('/addresses'),
+          apiClient.get<Address[] | { data: Address[] }>('/addresses'),
           apiClient.get<{ preview: CheckoutPreview }>('/checkout/init'),
         ]);
-        setAddresses(addrRes);
+        const addrs = Array.isArray(addrRes) ? addrRes : ((addrRes as any).data ?? []);
+        setAddresses(addrs);
         setPreview(initRes.preview);
-        const def = addrRes.find((a) => a.isDefault) || addrRes[0];
+        const def = addrs.find((a) => a.isDefault) || addrs[0];
         if (def) setSelectedAddressId(def.id);
       } catch { setError('Failed to initialize checkout'); }
       finally { setLoading(false); }

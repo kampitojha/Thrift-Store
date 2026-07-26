@@ -47,9 +47,9 @@ export default function CustomersPage() {
       params.set('limit', '20');
       if (search) params.set('q', search);
       const res = await apiClient.get<{ data: Customer[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(`/sellers/customers?${params}`);
-      setCustomers(res.data);
-      setTotal(res.meta.total);
-      setTotalPages(res.meta.totalPages);
+      setCustomers(res.data ?? []);
+      setTotal(res.meta?.total ?? 0);
+      setTotalPages(res.meta?.totalPages ?? 1);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Failed to load customers');
     } finally {
@@ -71,8 +71,8 @@ export default function CustomersPage() {
       params.set('page', '1');
       params.set('limit', '20');
       const res = await apiClient.get<{ data: BuyerOrder[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(`/sellers/customers/${c.user.id}/orders?${params}`);
-      setCustomerOrders(res.data);
-      setOrdersTotalPages(res.meta.totalPages);
+      setCustomerOrders(res.data ?? []);
+      setOrdersTotalPages(res.meta?.totalPages ?? 1);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Failed to load customer orders');
     } finally {
@@ -89,9 +89,9 @@ export default function CustomersPage() {
       params.set('page', String(nextPage));
       params.set('limit', '20');
       const res = await apiClient.get<{ data: BuyerOrder[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(`/sellers/customers/${selectedCustomer.user.id}/orders?${params}`);
-      setCustomerOrders((prev) => [...prev, ...res.data]);
+      setCustomerOrders((prev) => [...prev, ...(res.data ?? [])]);
       setOrdersPage(nextPage);
-      setOrdersTotalPages(res.meta.totalPages);
+      setOrdersTotalPages(res.meta?.totalPages ?? 1);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Failed to load more orders');
     } finally {

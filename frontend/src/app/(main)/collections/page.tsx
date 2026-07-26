@@ -43,7 +43,7 @@ export default function CollectionsPage() {
     setLoading(true);
     try {
       const res = await apiClient.get<{ data: Collection[]; meta: PaginationMeta }>('/collections');
-      setCollections(res.data);
+      setCollections(res.data ?? []);
     } catch { setCollections([]); } finally { setLoading(false); }
   };
 

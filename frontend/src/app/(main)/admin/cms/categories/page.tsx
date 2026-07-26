@@ -157,9 +157,10 @@ export default function AdminCategoriesPage() {
         const params = new URLSearchParams({ page: String(page), limit: '20' });
         if (search) params.set('q', search);
         const res = await apiClient.get<CategoriesResponse>(`/admin/categories?${params}`);
-        setCategories(res.data);
+        const data = res.data ?? [];
+        setCategories(data);
         setMeta(res.meta);
-        setDepthMap(buildDepthMap(res.data));
+        setDepthMap(buildDepthMap(data));
       } catch {
         setError('Failed to load categories');
       } finally {
@@ -173,7 +174,7 @@ export default function AdminCategoriesPage() {
     try {
       const params = new URLSearchParams({ page: '1', limit: '500' });
       const res = await apiClient.get<CategoriesResponse>(`/admin/categories?${params}`);
-      setParentOptions(res.data);
+      setParentOptions(res.data ?? []);
     } catch {
       /* ignore */
     }

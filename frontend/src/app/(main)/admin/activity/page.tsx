@@ -85,9 +85,9 @@ export default function AdminActivityPage() {
     setError(null);
     try {
       const res = await apiClient.get<{ data: ActivityEntry[]; meta: any }>(`/admin/activity-feed?page=${p}&limit=30`);
-      setActivities(res.data);
-      setTotalPages(res.meta.totalPages);
-      setPage(res.meta.page);
+      setActivities(res.data ?? []);
+      setTotalPages(res.meta?.totalPages ?? 1);
+      setPage(res.meta?.page ?? 1);
     } catch {
       setError('Failed to load activity feed');
     } finally {

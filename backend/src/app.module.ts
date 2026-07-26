@@ -44,6 +44,9 @@ import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module
 import { BrandsAdminModule } from './modules/brands/brands-admin.module';
 import { SupportModule } from './modules/support/support.module';
 import { GiftCardsModule } from './modules/gift-cards/gift-cards.module';
+import { PlatformModule } from './modules/platform/platform.module';
+import { GrowthModule } from './modules/growth/growth.module';
+import { InfrastructureModule } from './common/infrastructure/infrastructure.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 
 @Module({
@@ -101,6 +104,9 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
     BrandsAdminModule,
     SupportModule,
     GiftCardsModule,
+    PlatformModule,
+    GrowthModule,
+    InfrastructureModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

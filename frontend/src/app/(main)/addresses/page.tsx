@@ -34,7 +34,10 @@ export default function AddressesPage() {
 
   const fetchAddresses = useCallback(async () => {
     setLoading(true);
-    try { setAddresses(await apiClient.get<Address[]>('/addresses')); }
+    try {
+      const res = await apiClient.get<Address[] | { data: Address[] }>('/addresses');
+      setAddresses(Array.isArray(res) ? res : ((res as any).data ?? []));
+    }
     catch (e) { setError(e instanceof ApiError ? e.message : 'Failed to load addresses'); }
     finally { setLoading(false); }
   }, []);

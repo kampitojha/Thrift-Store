@@ -94,7 +94,7 @@ export default function AdminSellersPage() {
         if (search) params.set('search', search);
         if (verificationFilter) params.set('verification', verificationFilter);
         const res = await apiClient.get<SellersResponse>(`/admin/sellers?${params}`);
-        setSellers(res.data);
+        setSellers(res.data ?? []);
         setMeta(res.meta);
       } catch {
         setError('Failed to load sellers. Please try again.');

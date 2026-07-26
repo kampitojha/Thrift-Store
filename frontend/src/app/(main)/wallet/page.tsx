@@ -50,7 +50,7 @@ export default function WalletPage() {
         apiClient.get<{ data: Txn[]; meta: PaginationMeta }>(`/wallet/transactions?page=${page}&limit=20`),
       ]);
       setWallet(walletRes);
-      setTxns(txnRes.data);
+      setTxns(txnRes.data ?? []);
       setMeta(txnRes.meta);
     } catch { /* ignore */ } finally { setLoading(false); }
   }, [page]);

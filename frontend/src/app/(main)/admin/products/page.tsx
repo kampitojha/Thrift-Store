@@ -96,7 +96,7 @@ export default function AdminProductsPage() {
         if (search) params.set('search', search);
         if (statusFilter) params.set('status', statusFilter);
         const res = await apiClient.get<ProductsResponse>(`/admin/products?${params}`);
-        setProducts(res.data);
+        setProducts(res.data ?? []);
         setMeta(res.meta);
       } catch {
         setError('Failed to load products. Please try again.');

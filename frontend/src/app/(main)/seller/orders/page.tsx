@@ -58,9 +58,9 @@ export default function OrdersPage() {
       if (statusFilter) params.set('status', statusFilter);
       if (search) params.set('q', search);
       const res = await apiClient.get<{ data: Order[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(`/orders/seller?${params}`);
-      setOrders(res.data);
-      setTotal(res.meta.total);
-      setTotalPages(res.meta.totalPages);
+      setOrders(res.data ?? []);
+      setTotal(res.meta?.total ?? 0);
+      setTotalPages(res.meta?.totalPages ?? 1);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Failed to load orders');
     } finally {

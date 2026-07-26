@@ -91,7 +91,7 @@ export default function AdminAuditPage() {
       if (actionFilter) params.set('action', actionFilter);
       if (entityFilter) params.set('entityType', entityFilter);
       const res = await apiClient.get<AuditLogsResponse>(`/admin/audit-logs?${params}`);
-      setLogs(res.data);
+      setLogs(res.data ?? []);
       setMeta(res.meta);
     } catch {
       setError('Failed to load audit logs');

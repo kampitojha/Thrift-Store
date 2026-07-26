@@ -71,7 +71,7 @@ export default function AdminDisputesPage() {
       const params = new URLSearchParams({ page: String(page), limit: '20' });
       if (statusFilter && statusFilter !== 'ALL') params.set('status', statusFilter);
       const res = await apiClient.get<DisputesResponse>(`/admin/disputes?${params}`);
-      setDisputes(res.data);
+      setDisputes(res.data ?? []);
       setMeta(res.meta);
     } catch { /* ignore */ } finally { setLoading(false); }
   }, [statusFilter]);

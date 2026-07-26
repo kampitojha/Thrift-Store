@@ -31,9 +31,9 @@ export default function FollowersPage() {
       params.set('page', String(page));
       params.set('limit', '20');
       const res = await apiClient.get<{ data: Follower[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(`/sellers/followers?${params}`);
-      setFollowers(res.data);
-      setTotal(res.meta.total);
-      setTotalPages(res.meta.totalPages);
+      setFollowers(res.data ?? []);
+      setTotal(res.meta?.total ?? 0);
+      setTotalPages(res.meta?.totalPages ?? 1);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Failed to load followers');
     } finally {

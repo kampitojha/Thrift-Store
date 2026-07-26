@@ -76,7 +76,7 @@ export default function AdminReportsPage() {
       const params = new URLSearchParams({ page: String(page), limit: '20' });
       if (statusFilter && statusFilter !== 'ALL') params.set('status', statusFilter);
       const res = await apiClient.get<ReportsResponse>(`/admin/reports?${params}`);
-      setReports(res.data);
+      setReports(res.data ?? []);
       setMeta(res.meta);
     } catch { /* ignore */ } finally { setLoading(false); }
   }, [statusFilter]);

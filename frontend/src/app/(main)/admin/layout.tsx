@@ -45,6 +45,14 @@ import {
   Percent,
   Gift,
   Star,
+  Monitor,
+  Server,
+  Database,
+  HardDrive,
+  Webhook,
+  Wifi,
+  ActivitySquare,
+  Sunrise,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth-store';
@@ -90,6 +98,19 @@ const NAV_SECTIONS = [
     items: [
       { href: '/admin/brands', label: 'Brands', icon: Tag },
       { href: '/admin/cms/categories', label: 'Categories', icon: Layers },
+    ],
+  },
+  {
+    label: 'Platform',
+    items: [
+      { href: '/admin/platform', label: 'Overview', icon: Monitor, exact: true },
+      { href: '/admin/platform/monitoring', label: 'Monitoring', icon: Wifi },
+      { href: '/admin/platform/api-monitoring', label: 'API', icon: ActivitySquare },
+      { href: '/admin/platform/database', label: 'Database', icon: Database },
+      { href: '/admin/platform/redis', label: 'Redis', icon: HardDrive },
+      { href: '/admin/platform/queues', label: 'Queues', icon: Server },
+      { href: '/admin/platform/webhooks', label: 'Webhooks', icon: Webhook },
+      { href: '/admin/platform/health', label: 'Health', icon: Sunrise },
     ],
   },
   {

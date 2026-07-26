@@ -40,8 +40,8 @@ export default function SellerReturnsPage() {
       params.set('page', String(page));
       params.set('limit', '20');
       const res = await apiClient.get<{ data: ReturnOrder[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(`/returns/seller?${params}`);
-      setReturns(res.data);
-      setTotalPages(res.meta.totalPages);
+      setReturns(res.data ?? []);
+      setTotalPages(res.meta?.totalPages ?? 1);
     } catch (e) { setError(e instanceof ApiError ? e.message : 'Failed to load returns'); }
     finally { setLoading(false); }
   }, [page]);
@@ -119,10 +119,10 @@ export default function SellerReturnsPage() {
                 <div className="text-sm text-ink-600"><span className="font-medium text-ink-900">Buyer:</span> {selected.buyer?.displayName || selected.buyer?.username}</div>
                 <div className="text-sm text-ink-600"><span className="font-medium text-ink-900">Items:</span> {selected.items.map((i) => `${i.title} x${i.quantity}`).join(', ')}</div>
                 <div className="text-sm text-ink-600"><span className="font-medium text-ink-900">Total:</span> {formatINR(selected.totalPaise)}</div>
-                {selected.timeline.map((t) => t.metadata?.reason && (
+                {(selected.timeline ?? []).map((t) => t.metadata?.reason && (
                   <div key={t.id} className="text-sm text-ink-600"><span className="font-medium text-ink-900">Reason:</span> {t.metadata.reason}</div>
                 ))}
-                {selected.timeline.map((t) => t.metadata?.description && (
+                {(selected.timeline ?? []).map((t) => t.metadata?.description && (
                   <div key={t.id} className="text-sm text-ink-600"><span className="font-medium text-ink-900">Description:</span> {t.metadata.description}</div>
                 ))}
                 <div>

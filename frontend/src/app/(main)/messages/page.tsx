@@ -51,8 +51,9 @@ export default function MessagesPage() {
     try { connectSocket(); } catch {}
 
     apiClient
-      .get<Conversation[]>('/messages')
-      .then((convs) => {
+      .get<Conversation[] | { data: Conversation[] }>('/messages')
+      .then((res) => {
+        const convs = Array.isArray(res) ? res : ((res as any).data ?? []);
         setConversations(convs);
         convs.forEach((c) => {
           const other = c.participants.find((p) => p.user.id !== user.id)?.user;

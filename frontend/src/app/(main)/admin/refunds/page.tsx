@@ -64,7 +64,7 @@ export default function AdminRefundsPage() {
       const params = new URLSearchParams({ page: String(page), limit: '20' });
       if (statusFilter && statusFilter !== 'ALL') params.set('status', statusFilter);
       const res = await apiClient.get<RefundsResponse>(`/admin/refunds?${params}`);
-      setRefunds(res.data);
+      setRefunds(res.data ?? []);
       setMeta(res.meta);
     } catch { /* ignore */ } finally { setLoading(false); }
   }, [statusFilter]);

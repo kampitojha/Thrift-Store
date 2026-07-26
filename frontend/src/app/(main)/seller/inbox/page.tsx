@@ -40,8 +40,8 @@ export default function InboxPage() {
   const fetchConversations = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await apiClient.get<Conversation[]>('/messages');
-      setConversations(data);
+      const data = await apiClient.get<Conversation[] | { data: Conversation[] }>('/messages');
+      setConversations(Array.isArray(data) ? data : ((data as any).data ?? []));
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Failed to load conversations');
     } finally {
@@ -58,8 +58,8 @@ export default function InboxPage() {
     setSelectedConv(conv);
     setMessagesLoading(true);
     try {
-      const msgs = await apiClient.get<Message[]>(`/messages/${conv.id}`);
-      setMessages(msgs);
+      const msgs = await apiClient.get<Message[] | { data: Message[] }>(`/messages/${conv.id}`);
+      setMessages(Array.isArray(msgs) ? msgs : ((msgs as any).data ?? []));
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Failed to load messages');
     } finally {

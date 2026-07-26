@@ -55,8 +55,8 @@ export default function CouponsPage() {
       params.set('limit', '20');
       if (search) params.set('q', search);
       const res = await apiClient.get<{ data: Coupon[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(`/sellers/coupons?${params}`);
-      setCoupons(res.data);
-      setTotalPages(res.meta.totalPages);
+      setCoupons(res.data ?? []);
+      setTotalPages(res.meta?.totalPages ?? 1);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Failed to load coupons');
     } finally {

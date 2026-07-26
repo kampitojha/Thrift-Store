@@ -28,7 +28,7 @@ export default function ReturnsPage() {
   useEffect(() => {
     if (!user) { router.push('/sign-in'); return; }
     apiClient.get<{ data: ReturnOrder[] }>('/returns/my')
-      .then((res) => setReturns(res.data))
+      .then((res) => setReturns(res.data ?? []))
       .catch((e) => setError(e instanceof ApiError ? e.message : 'Failed to load returns'))
       .finally(() => setLoading(false));
   }, [user, router]);

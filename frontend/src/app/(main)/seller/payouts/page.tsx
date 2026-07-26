@@ -54,8 +54,8 @@ export default function PayoutsPage() {
         apiClient.get<TransactionsResponse>(`/wallet/transactions?page=${page}&limit=20`),
       ]);
       setWallet(w);
-      setTransactions(t.data);
-      setTotalPages(t.meta.totalPages);
+      setTransactions(t.data ?? []);
+      setTotalPages(t.meta?.totalPages ?? 1);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Failed to load wallet data');
     } finally {

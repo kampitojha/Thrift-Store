@@ -65,7 +65,7 @@ export default function AdminReturnsPage() {
       const params = new URLSearchParams({ page: String(page), limit: '20' });
       if (statusFilter && statusFilter !== 'ALL') params.set('status', statusFilter);
       const res = await apiClient.get<ReturnsResponse>(`/admin/returns?${params}`);
-      setReturns(res.data);
+      setReturns(res.data ?? []);
       setMeta(res.meta);
     } catch { /* ignore */ } finally { setLoading(false); }
   }, [statusFilter]);

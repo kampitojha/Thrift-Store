@@ -52,7 +52,7 @@ export default function AdminPayoutsPage() {
       const params = new URLSearchParams({ page: String(page), limit: '20' });
       if (statusFilter) params.set('status', statusFilter);
       const res = await apiClient.get<PayoutsResponse>(`/payouts/admin?${params}`);
-      setPayouts(res.data);
+      setPayouts(res.data ?? []);
       setMeta(res.meta);
     } catch { /* ignore */ } finally { setLoading(false); }
   }, [statusFilter]);

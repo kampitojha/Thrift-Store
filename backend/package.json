@@ -18,7 +18,10 @@
     "db:reset": "prisma migrate reset --force",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs -f"
+    "docker:logs": "docker compose logs -f",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.15",
@@ -31,7 +34,15 @@
     "@nestjs/swagger": "^8.1.0",
     "@nestjs/throttler": "^6.3.0",
     "@nestjs/websockets": "^10.4.15",
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.221.0",
+    "@opentelemetry/instrumentation-express": "^0.69.0",
+    "@opentelemetry/instrumentation-http": "^0.221.0",
+    "@opentelemetry/resources": "^2.10.0",
+    "@opentelemetry/sdk-node": "^0.221.0",
+    "@opentelemetry/semantic-conventions": "^1.43.0",
     "@prisma/client": "^6.1.0",
+    "@sentry/node": "^10.68.0",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",

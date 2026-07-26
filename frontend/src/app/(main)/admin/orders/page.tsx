@@ -64,7 +64,7 @@ export default function AdminOrdersPage() {
       if (statusFilter && statusFilter !== 'ALL') params.set('status', statusFilter);
       if (debouncedSearch) params.set('search', debouncedSearch);
       const res = await apiClient.get<OrdersResponse>(`/admin/orders?${params}`);
-      setOrders(res.data);
+      setOrders(res.data ?? []);
       setMeta(res.meta);
     } catch { /* ignore */ } finally { setLoading(false); }
   }, [statusFilter, debouncedSearch]);

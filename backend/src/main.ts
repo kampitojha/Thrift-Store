@@ -14,6 +14,10 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { createWinstonLogger } from './common/logger/winston.logger';
+import { CorrelationIdMiddleware } from './common/infrastructure/correlation-id.middleware';
+import { LoggingMiddleware } from './common/infrastructure/logging.middleware';
+import { SecurityMiddleware } from './common/infrastructure/security.middleware';
+import { IdempotencyMiddleware } from './common/infrastructure/idempotency.middleware';
 
 // CJS interop helpers (Nest/CommonJS builds)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,6 +53,15 @@ async function bootstrap() {
     defaultVersion: '1',
   });
 
+  const correlationMw = app.get(CorrelationIdMiddleware);
+  const loggingMw = app.get(LoggingMiddleware);
+  const securityMw = app.get(SecurityMiddleware);
+  const idempotencyMw = app.get(IdempotencyMiddleware);
+
+  app.use(correlationMw.use.bind(correlationMw));
+  app.use(loggingMw.use.bind(loggingMw));
+  app.use(securityMw.use.bind(securityMw));
+  app.use(idempotencyMw.use.bind(idempotencyMw));
   app.use(helmetMw({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.use(compressionMw());
   app.use(cookieParserMw());
@@ -57,7 +70,7 @@ async function bootstrap() {
     origin: corsOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-Id', 'X-Device-Id'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-Id', 'X-Device-Id', 'Idempotency-Key'],
   });
 
   app.useGlobalPipes(

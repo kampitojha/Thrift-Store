@@ -65,7 +65,7 @@ export default function AdminNotificationsPage() {
     setError(null);
     try {
       const res = await apiClient.get<{ data: AdminNotification[]; meta: any }>('/admin/notifications');
-      setNotifications(res.data);
+      setNotifications(res.data ?? []);
     } catch {
       setError('Failed to load notifications');
     } finally {

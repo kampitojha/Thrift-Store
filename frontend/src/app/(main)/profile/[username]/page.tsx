@@ -135,22 +135,22 @@ export default function ProfilePage() {
         const res = await apiClient.get<{ data: Listing[]; meta: PaginationMeta }>(
           `/products?sellerId=${profile!.id}&limit=12`,
         );
-        setListings(res.data);
+        setListings(res.data ?? []);
       } else if (tab === 'reviews') {
         const res = await apiClient.get<{ data: Review[]; meta: PaginationMeta }>(
           `/reviews/seller/${profile!.id}`,
         );
-        setReviews(res.data);
+        setReviews(res.data ?? []);
       } else if (tab === 'collections') {
         const res = await apiClient.get<{ data: Collection[]; meta: PaginationMeta }>(
           `/collections/user/${encodeURIComponent(username)}`,
         );
-        setCollections(res.data);
+        setCollections(res.data ?? []);
       } else if (tab === 'following') {
         const res = await apiClient.get<{ data: FollowUser[]; meta: PaginationMeta }>(
           `/users/${encodeURIComponent(username)}/following`,
         );
-        setFollowingList(res.data);
+        setFollowingList(res.data ?? []);
       }
     } catch { /* ignore */ } finally { setTabLoading(false); }
   };

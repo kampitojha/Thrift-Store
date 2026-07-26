@@ -1394,3 +1394,125 @@ model AuditLog {
   @@index([createdAt])
   @@map("audit_logs")
 }
+
+model SystemLog {
+  id        String   @id @default(cuid())
+  level     String   @default("info")
+  message   String
+  context   String?
+  service   String   @default("api")
+  metadata  Json?
+  ipAddress String?
+  userId    String?
+  timestamp DateTime @default(now())
+
+  @@index([level, timestamp])
+  @@index([service, level, timestamp])
+  @@index([timestamp])
+  @@map("system_logs")
+}
+
+model WebhookEvent {
+  id             String   @id @default(cuid())
+  provider       String
+  eventType      String
+  status         String   @default("pending")
+  requestBody    Json?
+  responseBody   String?
+  responseStatus Int?
+  signature      String?
+  attempts       Int      @default(0)
+  maxAttempts    Int      @default(3)
+  lastAttemptAt  DateTime?
+  completedAt    DateTime?
+  errorMessage   String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([provider, status, createdAt])
+  @@index([status, createdAt])
+  @@map("webhook_events")
+}
+
+model PlatformSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  type      String   @default("string")
+  group     String   @default("general")
+  label     String?
+  description String?
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  @@index([key])
+  @@index([group])
+  @@map("platform_settings")
+}
+
+model BackupRecord {
+  id          String   @id @default(cuid())
+  type        String   @default("manual")
+  status      String   @default("pending")
+  scope       String   @default("full")
+  fileSize    Int?
+  fileUrl     String?
+  fileName    String?
+  checksum    String?
+  notes       String?
+  startedAt   DateTime?
+  completedAt DateTime?
+  errorMessage String?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+
+  @@index([status, createdAt])
+  @@index([type, createdAt])
+  @@map("backup_records")
+}
+
+model PlatformJob {
+  id          String   @id @default(cuid())
+  type        String
+  status      String   @default("pending")
+  priority    Int      @default(0)
+  payload     Json?
+  result      Json?
+  progress    Int      @default(0)
+  attempts    Int      @default(0)
+  maxAttempts Int      @default(3)
+  scheduledAt DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
+  errorMessage String?
+  workerId    String?
+  tags        String[]
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status, type, createdAt])
+  @@index([type, status])
+  @@index([scheduledAt])
+  @@map("platform_jobs")
+}
+
+model AdminNotification {
+  id        String   @id @default(cuid())
+  type      String
+  title     String
+  message   String
+  severity  String   @default("info")
+  category  String   @default("system")
+  read      Boolean  @default(false)
+  link      String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  readAt    DateTime?
+
+  @@index([read, createdAt])
+  @@index([type, createdAt])
+  @@index([severity, createdAt])
+  @@map("admin_notifications")
+}

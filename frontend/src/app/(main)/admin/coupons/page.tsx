@@ -62,7 +62,7 @@ export default function AdminCouponsPage() {
     try {
       const params = new URLSearchParams({ page: String(page), limit: '20' });
       const res = await apiClient.get<CouponsResponse>(`/admin/coupons?${params}`);
-      setCoupons(res.data);
+      setCoupons(res.data ?? []);
       setMeta(res.meta);
     } catch {
       setError('Failed to load coupons');

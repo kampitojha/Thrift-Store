@@ -65,9 +65,9 @@ export default function InventoryPage() {
       if (statusFilter) params.set('status', statusFilter);
       params.set('sort', sortBy);
       const res = await apiClient.get<{ data: Product[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(`/products/me/listings?${params}`);
-      setProducts(res.data);
-      setTotal(res.meta.total);
-      setTotalPages(res.meta.totalPages);
+      setProducts(res.data ?? []);
+      setTotal(res.meta?.total ?? 0);
+      setTotalPages(res.meta?.totalPages ?? 1);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Failed to load products');
     } finally {

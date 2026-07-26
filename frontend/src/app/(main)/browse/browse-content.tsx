@@ -149,7 +149,7 @@ export function BrowsePage() {
         `/products?${new URLSearchParams(params).toString()}`,
         { revalidate: 30 },
       );
-      setProducts(res.data);
+      setProducts(res.data ?? []);
       setMeta(res.meta);
     } catch {
       setProducts([]);
