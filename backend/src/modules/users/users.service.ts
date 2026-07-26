@@ -166,14 +166,93 @@ export class UsersService {
     };
   }
 
+  async getFollowing(username: string, page = 1, limit = 24) {
+    const user = await this.prisma.user.findUnique({
+      where: { username: username.toLowerCase() },
+    });
+    if (!user) throw new NotFoundException('User not found');
+
+    const { skip, take } = paginate(page, limit);
+    const [items, total] = await Promise.all([
+      this.prisma.follow.findMany({
+        where: { followerId: user.id },
+        skip,
+        take,
+        include: {
+          following: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatarUrl: true,
+              isVerified: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.follow.count({ where: { followerId: user.id } }),
+    ]);
+
+    return {
+      data: items.map((i) => i.following),
+      meta: paginationMeta(total, page, take),
+    };
+  }
+
+  async isFollowing(followerId: string, targetUsername: string) {
+    const target = await this.prisma.user.findUnique({
+      where: { username: targetUsername.toLowerCase() },
+      select: { id: true },
+    });
+    if (!target) throw new NotFoundException('User not found');
+
+    const follow = await this.prisma.follow.findUnique({
+      where: {
+        followerId_followingId: { followerId, followingId: target.id },
+      },
+    });
+    return { following: !!follow };
+  }
+
+  async getSuggestedUsers(userId: string, limit = 10) {
+    const following = await this.prisma.follow.findMany({
+      where: { followerId: userId },
+      select: { followingId: true },
+    });
+    const followingIds = following.map((f) => f.followingId);
+    const excludeIds = [userId, ...followingIds];
+
+    const users = await this.prisma.user.findMany({
+      where: {
+        id: { notIn: excludeIds },
+        status: 'ACTIVE',
+        role: { not: 'GUEST' },
+      },
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        avatarUrl: true,
+        bio: true,
+        isVerified: true,
+        _count: {
+          select: { followers: true, products: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+
+    return users;
+  }
+
   async getAddresses(userId: string) {
     return this.prisma.address.findMany({
       where: { userId },
       orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
     });
   }
-
-  // ── Notification Preferences ──
 
   async getNotificationPrefs(userId: string) {
     const user = await this.prisma.user.findUnique({
@@ -196,8 +275,6 @@ export class UsersService {
     });
     return { ok: true };
   }
-
-  // ── Privacy Settings ──
 
   async getPrivacySettings(userId: string) {
     const user = await this.prisma.user.findUnique({
@@ -232,8 +309,6 @@ export class UsersService {
     });
     return { ok: true };
   }
-
-  // ── Block/Unblock ──
 
   async blockUser(userId: string, username: string) {
     const target = await this.prisma.user.findUnique({
@@ -290,8 +365,6 @@ export class UsersService {
     });
     return { unblocked: true };
   }
-
-  // ── Account Deletion ──
 
   async deleteAccount(userId: string, reason?: string) {
     await this.prisma.userSession.updateMany({

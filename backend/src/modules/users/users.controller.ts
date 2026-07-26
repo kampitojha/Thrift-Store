@@ -29,6 +29,12 @@ export class UsersController {
     return this.users.addAddress(user.id, body);
   }
 
+  @Get('me/following')
+  @ApiBearerAuth()
+  myFollowing(@CurrentUser() user: AuthUser, @Query() q: PaginationDto) {
+    return this.users.getFollowing(user.username, q.page, q.limit);
+  }
+
   @Public()
   @Get(':username')
   getProfile(@Param('username') username: string) {
@@ -51,6 +57,24 @@ export class UsersController {
   @Get(':username/followers')
   followers(@Param('username') username: string, @Query() q: PaginationDto) {
     return this.users.getFollowers(username, q.page, q.limit);
+  }
+
+  @Public()
+  @Get(':username/following')
+  following(@Param('username') username: string, @Query() q: PaginationDto) {
+    return this.users.getFollowing(username, q.page, q.limit);
+  }
+
+  @Get(':username/is-following')
+  @ApiBearerAuth()
+  isFollowing(@CurrentUser() user: AuthUser, @Param('username') username: string) {
+    return this.users.isFollowing(user.id, username);
+  }
+
+  @Get('me/suggested')
+  @ApiBearerAuth()
+  suggestedUsers(@CurrentUser() user: AuthUser, @Query('limit') limit?: number) {
+    return this.users.getSuggestedUsers(user.id, limit);
   }
 
   // ── Notification Preferences ──

@@ -37,6 +37,13 @@ import { CheckoutModule } from './modules/checkout/checkout.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
 import { PayoutsModule } from './modules/payouts/payouts.module';
 import { RefundsModule } from './modules/refunds/refunds.module';
+import { EventsModule } from './modules/events/events.module';
+import { CollectionsModule } from './modules/collections/collections.module';
+import { SavedSearchesModule } from './modules/saved-searches/saved-searches.module';
+import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module';
+import { BrandsAdminModule } from './modules/brands/brands-admin.module';
+import { SupportModule } from './modules/support/support.module';
+import { GiftCardsModule } from './modules/gift-cards/gift-cards.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 
 @Module({
@@ -87,6 +94,13 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
     InvoicesModule,
     PayoutsModule,
     RefundsModule,
+    EventsModule,
+    CollectionsModule,
+    SavedSearchesModule,
+    FeatureFlagsModule,
+    BrandsAdminModule,
+    SupportModule,
+    GiftCardsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

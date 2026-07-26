@@ -259,13 +259,14 @@ model User {
   preferredLocale   String     @default("en")
   preferredCurrency String     @default("INR")
   socialLinks       Json?
-  metadata          Json?
-  lastLoginAt       DateTime?
-  deletedAt         DateTime?
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
+   metadata          Json?
+   lastLoginAt       DateTime?
+   lastSeenAt        DateTime?
+   deletedAt         DateTime?
+   createdAt         DateTime   @default(now())
+   updatedAt         DateTime   @updatedAt
 
-  profile           UserProfile?
+   profile           UserProfile?
   addresses         Address[]
   sessions          UserSession[]
   devices           UserDevice[]
@@ -288,6 +289,8 @@ model User {
   referralsGiven    Referral[]          @relation("Referrer")
   referralReceived  Referral?           @relation("Referee")
   supportTickets    SupportTicket[]
+  assignedTickets   SupportTicket[]  @relation("AssigneeTickets")
+  supportMessagesSent SupportTicketMessage[]
   reportsFiled      Report[]            @relation("Reporter")
   follows           Follow[]            @relation("Follower")
   followers         Follow[]            @relation("Following")
@@ -567,6 +570,7 @@ model Product {
   offers       Offer[]
   views        ProductView[]
   reports      Report[]
+  collectionItems CollectionItem[]
 
   @@index([sellerId, status])
   @@index([categoryId, status])
@@ -703,6 +707,7 @@ model CollectionItem {
   createdAt    DateTime @default(now())
 
   collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id])
 
   @@unique([collectionId, productId])
   @@map("collection_items")
@@ -948,6 +953,8 @@ model ConversationParticipant {
   userId         String
   lastReadAt     DateTime?
   isMuted        Boolean   @default(false)
+  isPinned       Boolean   @default(false)
+  isArchived     Boolean   @default(false)
   joinedAt       DateTime  @default(now())
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
@@ -994,16 +1001,21 @@ model Review {
   isVerifiedPurchase Boolean @default(false)
   helpfulCount  Int      @default(0)
   status        String   @default("published") // published | hidden | flagged
+  deletedAt     DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   product    Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   author     User     @relation("ReviewAuthor", fields: [authorId], references: [id])
   targetUser User?    @relation("ReviewTarget", fields: [targetUserId], references: [id])
+  replies    Review[] @relation("ReviewReplies")
+  replyTo    Review?  @relation("ReviewReplies", fields: [replyToId], references: [id])
+  replyToId  String?
 
   @@index([productId])
   @@index([targetUserId])
   @@index([authorId])
+  @@index([replyToId])
   @@map("reviews")
 }
 
@@ -1207,10 +1219,12 @@ model SupportTicket {
   closedAt    DateTime?
 
   user     User                 @relation(fields: [userId], references: [id])
+  assignee User?                @relation("AssigneeTickets", fields: [assigneeId], references: [id], onDelete: SetNull)
   messages SupportTicketMessage[]
 
   @@index([userId, status])
   @@index([status, priority])
+  @@index([assigneeId])
   @@map("support_tickets")
 }
 
@@ -1222,9 +1236,11 @@ model SupportTicketMessage {
   isStaff   Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticket  SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  sender  User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
   @@index([ticketId])
+  @@index([senderId])
   @@map("support_ticket_messages")
 }
 

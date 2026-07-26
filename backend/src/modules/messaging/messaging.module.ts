@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MessagingService } from './messaging.service';
 import { MessagingController } from './messaging.controller';
+import { EventsModule } from '../events/events.module';
 
 @Module({
+  imports: [EventsModule],
   controllers: [MessagingController],
   providers: [MessagingService],
   exports: [MessagingService],

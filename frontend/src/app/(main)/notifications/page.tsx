@@ -3,11 +3,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Bell, CheckCheck, ArrowLeft, Package, Heart, MessageCircle, Tag, AlertCircle, Star, CreditCard } from 'lucide-react';
+import { Bell, CheckCheck, ArrowLeft, Package, Heart, MessageCircle, Tag, AlertCircle, Star, CreditCard, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/stores/auth-store';
 import { apiClient, PaginationMeta } from '@/lib/api';
+import { connectSocket, onNotification } from '@/lib/socket';
 import { cn } from '@/lib/utils';
 
 type Notification = {
@@ -32,6 +33,19 @@ const ICON_MAP: Record<string, React.ElementType> = {
   MESSAGE: MessageCircle,
   PAYMENT: CreditCard,
   SYSTEM: AlertCircle,
+  FOLLOW: Heart,
+  REVIEW: Star,
+  PAYOUT: CreditCard,
+};
+
+const TYPE_LABELS: Record<string, string> = {
+  ORDER_UPDATE: 'Orders',
+  PRICE_DROP: 'Price drops',
+  MESSAGE: 'Messages',
+  FOLLOW: 'Follows',
+  REVIEW: 'Reviews',
+  SYSTEM: 'System',
+  PAYOUT: 'Payouts',
 };
 
 export default function NotificationsPage() {
@@ -41,27 +55,46 @@ export default function NotificationsPage() {
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [markingAll, setMarkingAll] = useState(false);
+  const [filter, setFilter] = useState('');
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotifications = useCallback(async (type?: string) => {
     if (!user) return;
     setLoading(true);
     try {
-      const res = await apiClient.get<{ data: Notification[]; meta: PaginationMeta }>('/notifications');
+      const qs = type ? `?type=${type}` : '';
+      const res = await apiClient.get<{ data: Notification[]; meta: PaginationMeta & { unread?: number } }>(`/notifications${qs}`);
       setNotifications(res.data);
       setMeta(res.meta);
+      setUnreadCount(res.meta.unread ?? 0);
     } catch { setNotifications([]); } finally { setLoading(false); }
   }, [user]);
 
   useEffect(() => {
     if (!user) { router.push('/sign-in'); return; }
+    try { connectSocket(); } catch {}
     fetchNotifications();
+
+    const unsubNotif = onNotification((data: any) => {
+      if (data?.notification) {
+        setNotifications((prev) => [data.notification, ...prev]);
+        setUnreadCount((c) => c + 1);
+      }
+    });
+
+    return () => { unsubNotif(); };
   }, [user, router, fetchNotifications]);
+
+  useEffect(() => {
+    fetchNotifications(filter || undefined);
+  }, [filter, fetchNotifications]);
 
   const markAllRead = async () => {
     setMarkingAll(true);
     try {
       await apiClient.patch('/notifications/read', {});
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0);
     } catch { /* ignore */ } finally { setMarkingAll(false); }
   };
 
@@ -69,10 +102,17 @@ export default function NotificationsPage() {
     try {
       await apiClient.patch(`/notifications/${id}/read`, {});
       setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
+      setUnreadCount((c) => Math.max(0, c - 1));
     } catch { /* ignore */ }
   };
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const deleteNotification = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await apiClient.delete(`/notifications/${id}`);
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    } catch { /* ignore */ }
+  };
 
   if (!user) return null;
 
@@ -97,6 +137,31 @@ export default function NotificationsPage() {
             Mark all read
           </Button>
         )}
+      </div>
+
+      {/* Filter tabs */}
+      <div className="mb-4 flex gap-2 overflow-x-auto pb-2">
+        <button
+          onClick={() => setFilter('')}
+          className={cn(
+            'shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition',
+            !filter ? 'bg-brand-600 text-white' : 'bg-ink-100 text-ink-600 hover:bg-ink-200',
+          )}
+        >
+          All
+        </button>
+        {Object.entries(TYPE_LABELS).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setFilter(key)}
+            className={cn(
+              'shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition',
+              filter === key ? 'bg-brand-600 text-white' : 'bg-ink-100 text-ink-600 hover:bg-ink-200',
+            )}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {loading ? (
@@ -125,10 +190,10 @@ export default function NotificationsPage() {
                 key={n.id}
                 onClick={() => markRead(n.id)}
                 className={cn(
-                  'w-full rounded-2xl border p-4 text-left transition',
+                  'group w-full rounded-2xl border p-4 text-left transition',
                   n.isRead
-                    ? 'border-ink-100 bg-white'
-                    : 'border-brand-200 bg-brand-50/50',
+                    ? 'border-ink-100 bg-white hover:bg-ink-50'
+                    : 'border-brand-200 bg-brand-50/50 hover:bg-brand-50',
                 )}
               >
                 <div className="flex items-start gap-4">
@@ -143,9 +208,17 @@ export default function NotificationsPage() {
                       <p className={cn('text-sm', n.isRead ? 'text-ink-700' : 'font-medium text-ink-900')}>
                         {n.title}
                       </p>
-                      <span className="shrink-0 text-xs text-ink-400">
-                        {new Date(n.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="shrink-0 text-xs text-ink-400">
+                          {new Date(n.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
+                        </span>
+                        <button
+                          onClick={(e) => deleteNotification(n.id, e)}
+                          className="shrink-0 rounded-full p-1 text-ink-300 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </div>
                     {n.body && (
                       <p className="mt-1 text-sm text-ink-500 line-clamp-2">{n.body}</p>

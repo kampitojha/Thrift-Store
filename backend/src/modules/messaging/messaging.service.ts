@@ -1,12 +1,12 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { paginate, paginationMeta } from '../../common/dto/pagination.dto';
 
 @Injectable()
 export class MessagingService {
   constructor(private readonly prisma: PrismaService) {}
 
   async startConversation(userId: string, otherUserId: string, productId?: string) {
-    // Find existing 1:1 conversation
     const existing = await this.prisma.conversation.findFirst({
       where: {
         productId: productId ?? null,
@@ -45,6 +45,57 @@ export class MessagingService {
         messages: { take: 1, orderBy: { createdAt: 'desc' } },
       },
       take: 50,
+    });
+  }
+
+  async searchConversations(userId: string, query: string) {
+    return this.prisma.conversation.findMany({
+      where: {
+        AND: [
+          { participants: { some: { userId } } },
+          {
+            participants: {
+              some: {
+                user: {
+                  OR: [
+                    { username: { contains: query, mode: 'insensitive' } },
+                    { displayName: { contains: query, mode: 'insensitive' } },
+                  ],
+                },
+              },
+            },
+          },
+        ],
+      },
+      orderBy: { lastMessageAt: 'desc' },
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: { id: true, username: true, avatarUrl: true, displayName: true },
+            },
+          },
+        },
+        messages: { take: 1, orderBy: { createdAt: 'desc' } },
+      },
+      take: 20,
+    });
+  }
+
+  async searchMessages(userId: string, conversationId: string, query: string) {
+    await this.assertParticipant(userId, conversationId);
+
+    return this.prisma.message.findMany({
+      where: {
+        conversationId,
+        deletedAt: null,
+        body: { contains: query, mode: 'insensitive' },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      include: {
+        sender: { select: { id: true, username: true, avatarUrl: true } },
+      },
     });
   }
 
@@ -100,6 +151,110 @@ export class MessagingService {
     });
 
     return message;
+  }
+
+  async toggleMute(userId: string, conversationId: string) {
+    const participant = await this.prisma.conversationParticipant.findUnique({
+      where: { conversationId_userId: { conversationId, userId } },
+    });
+    if (!participant) throw new ForbiddenException('Not a participant');
+
+    const updated = await this.prisma.conversationParticipant.update({
+      where: { conversationId_userId: { conversationId, userId } },
+      data: { isMuted: !participant.isMuted },
+    });
+    return { muted: updated.isMuted };
+  }
+
+  async togglePin(userId: string, conversationId: string) {
+    const participant = await this.prisma.conversationParticipant.findUnique({
+      where: { conversationId_userId: { conversationId, userId } },
+    });
+    if (!participant) throw new ForbiddenException('Not a participant');
+
+    const updated = await this.prisma.conversationParticipant.update({
+      where: { conversationId_userId: { conversationId, userId } },
+      data: { isPinned: !participant.isPinned },
+    });
+    return { pinned: updated.isPinned };
+  }
+
+  async archiveConversation(userId: string, conversationId: string) {
+    const participant = await this.prisma.conversationParticipant.findUnique({
+      where: { conversationId_userId: { conversationId, userId } },
+    });
+    if (!participant) throw new ForbiddenException('Not a participant');
+
+    const updated = await this.prisma.conversationParticipant.update({
+      where: { conversationId_userId: { conversationId, userId } },
+      data: { isArchived: !participant.isArchived },
+    });
+    return { archived: updated.isArchived };
+  }
+
+  async deleteConversation(userId: string, conversationId: string) {
+    await this.assertParticipant(userId, conversationId);
+    await this.prisma.message.updateMany({
+      where: { conversationId },
+      data: { deletedAt: new Date() },
+    });
+    return { ok: true };
+  }
+
+  async getUnreadCount(userId: string) {
+    const result = await this.prisma.conversationParticipant.aggregate({
+      where: {
+        userId,
+        conversation: {
+          messages: {
+            some: {
+              deletedAt: null,
+              NOT: { senderId: userId },
+              createdAt: { gt: undefined },
+            },
+          },
+        },
+      },
+      _count: true,
+    });
+
+    const conversations = await this.prisma.conversationParticipant.findMany({
+      where: { userId },
+      include: {
+        conversation: {
+          include: {
+            messages: {
+              where: {
+                deletedAt: null,
+                NOT: { senderId: userId },
+              },
+              select: { id: true, createdAt: true, readAt: true },
+            },
+          },
+        },
+      },
+    });
+
+    let total = 0;
+    for (const c of conversations) {
+      const readAt = c.lastReadAt ?? new Date(0);
+      const unread = c.conversation.messages.filter(
+        (m) => !m.readAt && m.createdAt > readAt,
+      ).length;
+      total += unread;
+    }
+    return { unread: total };
+  }
+
+  async getOnlineStatus(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { lastSeenAt: true },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000);
+    const online = user.lastSeenAt ? user.lastSeenAt > twoMinAgo : false;
+    return { userId, online, lastSeenAt: user.lastSeenAt };
   }
 
   private async assertParticipant(userId: string, conversationId: string) {

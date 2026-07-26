@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { NotificationChannel, NotificationType } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { paginate, paginationMeta } from '../../common/dto/pagination.dto';
@@ -9,22 +9,39 @@ export class NotificationsService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(userId: string, page = 1, limit = 30) {
+  async list(userId: string, page = 1, limit = 30, type?: NotificationType) {
     const { skip, take } = paginate(page, limit);
+    const where = { userId, ...(type ? { type } : {}) };
     const [items, total, unread] = await Promise.all([
       this.prisma.notification.findMany({
-        where: { userId },
+        where,
         skip,
         take,
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.notification.count({ where: { userId } }),
+      this.prisma.notification.count({ where }),
       this.prisma.notification.count({ where: { userId, isRead: false } }),
     ]);
     return {
       data: items,
       meta: { ...paginationMeta(total, page, take), unread },
     };
+  }
+
+  async getUnreadCount(userId: string) {
+    const unread = await this.prisma.notification.count({
+      where: { userId, isRead: false },
+    });
+    return { unread };
+  }
+
+  async delete(userId: string, id: string) {
+    const notification = await this.prisma.notification.findUnique({ where: { id } });
+    if (!notification) throw new NotFoundException('Notification not found');
+    if (notification.userId !== userId) throw new ForbiddenException('Not your notification');
+
+    await this.prisma.notification.delete({ where: { id } });
+    return { ok: true };
   }
 
   async markRead(userId: string, id?: string) {
@@ -50,7 +67,7 @@ export class NotificationsService {
     data?: object,
     channel: NotificationChannel = 'IN_APP',
   ) {
-    return this.prisma.notification.create({
+    const notification = await this.prisma.notification.create({
       data: {
         userId,
         type,
@@ -61,6 +78,18 @@ export class NotificationsService {
         sentAt: new Date(),
       },
     });
+    return notification;
+  }
+
+  async pushRealtime(
+    userId: string,
+    type: NotificationType,
+    title: string,
+    body: string,
+    data?: object,
+  ) {
+    const notification = await this.push(userId, type, title, body, data, 'IN_APP');
+    return { notification };
   }
 
   private async sendEmail(userId: string, subject: string, htmlBody: string) {
@@ -185,6 +214,85 @@ export class NotificationsService {
       `Payout ${status}`,
       `Your payout of ₹${(amountPaise / 100).toLocaleString('en-IN')} has been ${status}.`,
       { type: 'payout_update', amountPaise, payoutStatus: status },
+    );
+  }
+
+  async sendNewFollower(followerId: string, sellerId: string) {
+    const follower = await this.prisma.user.findUnique({
+      where: { id: followerId },
+      select: { username: true, displayName: true },
+    });
+    return this.sendMultiChannel(
+      sellerId,
+      'FOLLOW',
+      'New follower',
+      `${follower?.displayName ?? follower?.username ?? 'Someone'} started following you.`,
+      { type: 'new_follower', followerId, username: follower?.username },
+    );
+  }
+
+  async sendNewReview(reviewId: string, sellerId: string) {
+    const review = await this.prisma.review.findUnique({
+      where: { id: reviewId },
+      select: {
+        rating: true,
+        title: true,
+        author: { select: { username: true, displayName: true } },
+      },
+    });
+    if (!review) return null;
+    return this.sendMultiChannel(
+      sellerId,
+      'REVIEW',
+      'New review',
+      `${review.author.displayName ?? review.author.username} left a ${review.rating}-star review.`,
+      { type: 'new_review', reviewId, rating: review.rating },
+    );
+  }
+
+  async sendPriceDrop(userId: string, productId: string, oldPrice: number, newPrice: number) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      select: { title: true },
+    });
+    return this.sendMultiChannel(
+      userId,
+      'PRICE_DROP',
+      'Price drop!',
+      `${product?.title ?? 'A product'} dropped from ₹${(oldPrice / 100).toLocaleString('en-IN')} to ₹${(newPrice / 100).toLocaleString('en-IN')}.`,
+      { type: 'price_drop', productId, oldPrice, newPrice },
+    );
+  }
+
+  async sendMention(userId: string, mentionerId: string, context: { type: string; id: string }) {
+    const mentioner = await this.prisma.user.findUnique({
+      where: { id: mentionerId },
+      select: { username: true, displayName: true },
+    });
+    return this.sendMultiChannel(
+      userId,
+      'SYSTEM',
+      'You were mentioned',
+      `${mentioner?.displayName ?? mentioner?.username ?? 'Someone'} mentioned you in a ${context.type}.`,
+      { type: 'mention', mentionerId, context },
+    );
+  }
+
+  async sendCollectionShared(userId: string, sharerId: string, collectionId: string) {
+    const sharer = await this.prisma.user.findUnique({
+      where: { id: sharerId },
+      select: { username: true, displayName: true },
+    });
+    const collection = await this.prisma.collection.findUnique({
+      where: { id: collectionId },
+      select: { name: true },
+    });
+    return this.sendMultiChannel(
+      userId,
+      'SYSTEM',
+      'Collection shared',
+      `${sharer?.displayName ?? sharer?.username ?? 'Someone'} shared "${collection?.name ?? 'a collection'}" with you.`,
+      { type: 'collection_shared', sharerId, collectionId },
     );
   }
 }

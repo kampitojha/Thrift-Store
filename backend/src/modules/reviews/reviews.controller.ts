@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
   IsArray,
@@ -23,6 +23,10 @@ class CreateReviewDto {
   @IsOptional() @IsArray() mediaUrls?: string[];
 }
 
+class ReplyDto {
+  @IsString() body!: string;
+}
+
 @ApiTags('Reviews')
 @Controller({ path: 'reviews', version: '1' })
 export class ReviewsController {
@@ -40,9 +44,41 @@ export class ReviewsController {
     return this.reviews.forProduct(productId, q.page, q.limit);
   }
 
+  @Public()
+  @Get('product/:productId/rating/:rating')
+  filterByRating(
+    @Param('productId') productId: string,
+    @Param('rating') rating: string,
+    @Query() q: PaginationDto,
+  ) {
+    return this.reviews.filterByRating(productId, parseInt(rating, 10), q.page, q.limit);
+  }
+
+  @Public()
+  @Get('seller/:userId')
+  forSeller(@Param('userId') userId: string, @Query() q: PaginationDto) {
+    return this.reviews.forSeller(userId, q.page, q.limit);
+  }
+
+  @Post(':id/reply')
+  @ApiBearerAuth()
+  reply(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: ReplyDto,
+  ) {
+    return this.reviews.reply(user.id, id, dto.body);
+  }
+
   @Post(':id/helpful')
   @ApiBearerAuth()
-  helpful(@Param('id') id: string) {
-    return this.reviews.markHelpful(id);
+  helpful(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.reviews.markHelpful(id, user.id);
+  }
+
+  @Delete(':id')
+  @ApiBearerAuth()
+  delete(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.reviews.delete(user.id, id);
   }
 }
