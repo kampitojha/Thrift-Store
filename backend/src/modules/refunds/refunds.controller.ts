@@ -1,12 +1,14 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { RefundsService } from './refunds.service';
 import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { RolesGuard } from '../../common/guards/roles.guard';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @ApiTags('Refunds')
 @ApiBearerAuth()
+@UseGuards(RolesGuard)
 @Controller({ path: 'refunds', version: '1' })
 export class RefundsController {
   constructor(private readonly refunds: RefundsService) {}

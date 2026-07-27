@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import * as speakeasy from 'speakeasy';
 import * as qrcode from 'qrcode';
 import { TwoFactorService } from './two-factor.service';
@@ -24,6 +25,7 @@ export class TwoFactorController {
   }
 
   @Post('setup')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({ summary: 'Start 2FA setup' })
   async setup(@CurrentUser() user: AuthUser) {
     const secret = speakeasy.generateSecret({ name: `Thrift Store:${user.email}` });
@@ -32,6 +34,7 @@ export class TwoFactorController {
   }
 
   @Post('verify')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiOperation({ summary: 'Verify and enable 2FA' })
   async verify(@CurrentUser() user: AuthUser, @Body() dto: Verify2faDto) {
     const verified = speakeasy.totp.verify({
@@ -48,6 +51,7 @@ export class TwoFactorController {
   }
 
   @Post('disable')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({ summary: 'Disable 2FA' })
   async disable(@CurrentUser() user: AuthUser, @Body() dto: Verify2faDto) {
     const enabled = await this.twofa.isEnabled(user.id);

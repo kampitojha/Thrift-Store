@@ -1,13 +1,15 @@
-import { Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { IsString, IsOptional, IsNumber, Min } from 'class-validator';
 import { PayoutsService } from './payouts.service';
 import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { RolesGuard } from '../../common/guards/roles.guard';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @ApiTags('Payouts')
 @ApiBearerAuth()
+@UseGuards(RolesGuard)
 @Controller({ path: 'payouts', version: '1' })
 export class PayoutsController {
   constructor(private readonly payouts: PayoutsService) {}

@@ -31,15 +31,21 @@ export class SecurityMiddleware implements NestMiddleware {
   }
 
   private setCspHeaders(res: Response) {
+    const isDev = this.config.get('NODE_ENV') !== 'production';
+    const scriptSrc = isDev ? "'self' 'unsafe-inline' 'unsafe-eval' https:" : "'self' https:";
+    const styleSrc = isDev ? "'self' 'unsafe-inline' https:" : "'self' https:";
     const csp = [
       "default-src 'self'",
-      "img-src 'self' data: blob: https: http:",
-      "connect-src 'self' https: http: ws: wss:",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:",
-      "style-src 'self' 'unsafe-inline' https:",
+      "img-src 'self' data: blob: https:",
+      "connect-src 'self' https: ws: wss:",
+      `script-src ${scriptSrc}`,
+      `style-src ${styleSrc}`,
       "font-src 'self' data: https:",
       "frame-src 'self' https:",
       "media-src 'self' https:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
     ].join('; ');
 
     res.setHeader('Content-Security-Policy', csp);

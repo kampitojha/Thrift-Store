@@ -90,9 +90,22 @@ export class AuthService {
     return { user, ...tokens };
   }
 
+  private readonly LOCKOUT_THRESHOLD = 5;
+  private readonly LOCKOUT_DURATION = 15 * 60; // 15 minutes in seconds
+
   async login(dto: LoginDto, meta?: { ip?: string; userAgent?: string }) {
+    const email = dto.email.toLowerCase();
+    const lockoutKey = `lockout:${email}`;
+
+    // Check account lockout
+    const isLocked = await this.redis.get<number>(lockoutKey);
+    if (isLocked) {
+      const remaining = await this.redis.ttl(lockoutKey);
+      throw new UnauthorizedException(`Account temporarily locked. Try again in ${Math.ceil(remaining / 60)} minutes.`);
+    }
+
     const user = await this.prisma.user.findUnique({
-      where: { email: dto.email.toLowerCase() },
+      where: { email },
     });
 
     if (!user || !user.passwordHash) {
@@ -113,8 +126,21 @@ export class AuthService {
           success: false,
         },
       });
+
+      // Increment failed attempts (1h TTL on first attempt)
+      const attemptsKey = `login_attempts:${email}`;
+      const attempts = await this.redis.incr(attemptsKey, 3600);
+      if (attempts >= this.LOCKOUT_THRESHOLD) {
+        await this.redis.set(lockoutKey, 1, this.LOCKOUT_DURATION);
+        await this.redis.del(attemptsKey);
+      }
+
       throw new UnauthorizedException('Invalid email or password');
     }
+
+    // Clear failed attempts on success
+    await this.redis.del(`login_attempts:${email}`);
+    await this.redis.del(lockoutKey);
 
     await this.prisma.user.update({
       where: { id: user.id },

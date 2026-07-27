@@ -52,6 +52,7 @@ export class AuthController {
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   refresh(@Body() dto: RefreshTokenDto) {
     return this.auth.refresh(dto.refreshToken);
   }
@@ -80,6 +81,7 @@ export class AuthController {
   @Public()
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.auth.resetPassword(dto.token, dto.password);
   }
@@ -87,6 +89,7 @@ export class AuthController {
   @Public()
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   verifyEmail(@Body() dto: { token: string }) {
     return this.auth.verifyEmail(dto.token);
   }

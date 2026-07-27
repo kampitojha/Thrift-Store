@@ -27,7 +27,7 @@ export class SellersService {
         },
       }),
       this.prisma.user.update({
-        where: { id: userId },
+        where: { id: userId, role: { in: ['BUYER', 'GUEST'] } },
         data: { role: 'SELLER' },
       }),
     ]);

@@ -19,12 +19,17 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
-          cache-dependency-path: backend/package-lock.json
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
       - run: npm ci
         working-directory: backend
-      - run: npm run lint -- --max-warnings=0
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run lint
         working-directory: backend
-        continue-on-error: true
+      - run: npm run lint
+        working-directory: frontend
 
   typecheck:
     name: TypeScript Check
@@ -48,6 +53,21 @@ jobs:
         working-directory: backend
       - run: npm run typecheck
         working-directory: frontend
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm audit --audit-level=high
+        working-directory: backend
+        continue-on-error: true
+      - run: npm audit --audit-level=high
+        working-directory: frontend
+        continue-on-error: true
 
   test:
     name: Tests
@@ -131,5 +151,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker build -t reloom-backend:ci ./backend
-      - run: docker build -t reloom-frontend:ci ./frontend
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          tags: reloom-backend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          tags: reloom-frontend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

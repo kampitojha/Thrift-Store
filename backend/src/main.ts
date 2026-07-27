@@ -28,6 +28,16 @@ const compressionMw = (compression as any).default || compression;
 const cookieParserMw = (cookieParser as any).default || cookieParser;
 
 async function bootstrap() {
+  // Global error handlers — must be set before anything else
+  process.on('unhandledRejection', (reason: unknown) => {
+    console.error('UNHANDLED REJECTION:', reason instanceof Error ? reason.stack : reason);
+  });
+  process.on('uncaughtException', (error: Error) => {
+    console.error('UNCAUGHT EXCEPTION:', error.stack);
+    // Give logger time to flush, then exit
+    setTimeout(() => process.exit(1), 1000);
+  });
+
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
     rawBody: true,
@@ -36,6 +46,15 @@ async function bootstrap() {
   const config = app.get(ConfigService);
   const logger = createWinstonLogger();
   app.useLogger(logger);
+
+  // Validate critical configuration
+  const jwtSecret = config.get<string>('JWT_SECRET', '');
+  if (!jwtSecret || jwtSecret === 'change-this-to-a-long-random-string-min-32-chars' || jwtSecret === 'dev-only-change-me-min-32-chars!!') {
+    logger.error('CRITICAL: JWT_SECRET is not set or is using a placeholder value. Set a strong random secret in production.', 'Bootstrap');
+    if (process.env.NODE_ENV === 'production') {
+      process.exit(1);
+    }
+  }
 
   const port = config.get<number>('PORT', 4000);
   const apiPrefix = config.get<string>('API_PREFIX', 'api/v1');

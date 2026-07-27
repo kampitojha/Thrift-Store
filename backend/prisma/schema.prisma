@@ -411,6 +411,7 @@ model Follow {
 
   @@unique([followerId, followingId])
   @@index([followingId])
+  @@index([followerId])
   @@map("follows")
 }
 
@@ -782,6 +783,7 @@ model OrderItem {
 
   @@index([orderId])
   @@index([sellerId])
+  @@index([sellerId, status])
   @@index([productId])
   @@map("order_items")
 }
@@ -1013,6 +1015,7 @@ model Review {
   replyToId  String?
 
   @@index([productId])
+  @@index([productId, status])
   @@index([targetUserId])
   @@index([authorId])
   @@index([replyToId])
@@ -1038,6 +1041,7 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead, createdAt])
+  @@index([userId, type])
   @@map("notifications")
 }
 

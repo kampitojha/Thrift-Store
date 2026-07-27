@@ -1,0 +1,23 @@
+{
+  "name": "thrift-store",
+  "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md,css}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,css}\""
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
+    "prettier": "^3.4.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --fix --max-warnings=0"
+    ],
+    "*.{js,json,md,css}": [
+      "prettier --write"
+    ]
+  }
+}

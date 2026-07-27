@@ -15,7 +15,7 @@ export default () => ({
   meiliMasterKey: process.env.MEILI_MASTER_KEY || '',
   meiliIndexProducts: process.env.MEILI_INDEX_PRODUCTS || 'products',
 
-  jwtSecret: process.env.JWT_SECRET || 'dev-only-change-me-min-32-chars!!',
+  jwtSecret: process.env.JWT_SECRET || '',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
 
