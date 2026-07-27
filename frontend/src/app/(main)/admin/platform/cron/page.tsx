@@ -213,7 +213,7 @@ export default function CronPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2.5">
                     <h3 className="font-display text-base font-semibold text-ink-900">{job.name}</h3>
-                    <Badge variant={job.enabled ? 'success' : 'secondary'}>
+                    <Badge variant={job.enabled ? 'success' : 'outline'}>
                       {job.enabled ? 'Enabled' : 'Disabled'}
                     </Badge>
                     <Badge variant="outline" className="font-mono">{job.type}</Badge>

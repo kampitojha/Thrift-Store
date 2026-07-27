@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch {
-    return { title: 'Product · Reloom' };
+    return { title: 'Product · Thrift Store' };
   }
 }
 
@@ -37,11 +37,13 @@ export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
 
   let product: Awaited<ReturnType<typeof fetchProduct>>;
+  let isDemo = false;
   try {
     product = await fetchProduct(slug);
   } catch {
-    if (['nike', 'levis', 'zara', 'casio'].some((b) => slug.includes(b))) {
+    if (['d1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8'].some((b) => slug.includes(b)) || ['nike', 'levis', 'zara', 'casio', 'adidas', 'ray-ban', 'uniqlo', 'macbook'].some((b) => slug.includes(b))) {
       product = DEMO(slug);
+      isDemo = true;
     } else {
       notFound();
     }
@@ -128,7 +130,7 @@ export default async function ProductPage({ params }: Props) {
             )}
           </div>
 
-          <ProductActions productId={product.id} slug={product.slug} />
+          <ProductActions productId={product.id} slug={product.slug} isDemo={isDemo} />
 
           {/* Trust Badges */}
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -228,7 +230,7 @@ function DEMO(slug: string) {
     brandName: 'Brand',
     category: { id: 'cat1', name: 'Clothing', slug: 'clothing' },
     tags: ['thrift', 'preloved', 'vintage'],
-    media: [{ id: '1', url: 'https://placehold.co/800x1000/1a1a1a/fff?text=Reloom', isPrimary: true }],
+    media: [{ id: '1', url: 'https://placehold.co/800x1000/1a1a1a/fff?text=TS', isPrimary: true }],
     seller: {
       id: 's1',
       username: 'vintage_vault',

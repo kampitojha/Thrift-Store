@@ -8,7 +8,7 @@ function thumb(p: ProductLike) {
   return (
     p.thumbnailUrl ||
     p.media?.[0]?.url ||
-    'https://placehold.co/600x750/f2e8db/5d362a?text=Reloom'
+    'https://placehold.co/600x750/f2e8db/5d362a?text=TS'
   );
 }
 

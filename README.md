@@ -1,4 +1,4 @@
-# Reloom
+# Thrift Store
 
 Premium thrift marketplace.
 
@@ -36,7 +36,7 @@ Optional (Redis/search only): `npm run docker:up` — **no Postgres container**.
 
 Swagger: http://localhost:4000/docs  
 
-Seed login: `seller@reloom.com` / `Reloom@123`
+Seed login: `seller@thriftstore.com` / `Thrift@123`
 
 DB extension connection: see `backend/DATABASE.md`  
 `postgresql://reloom:reloom_secret@127.0.0.1:5432/reloom`

@@ -89,7 +89,7 @@ export default function AdminReportsPage() {
   const handleAction = async (id: string, action: string) => {
     setActionLoading(id);
     try {
-      await apiClient.patch(`/admin/reports/${id}/${action}`, { note: actionNote.trim() || undefined });
+      await apiClient.patch(`/admin/reports/${id}/resolve`, { action, resolution: actionNote.trim() || undefined });
       setExpandedId(null);
       setActionNote('');
       await fetchReports(meta.page);

@@ -21,9 +21,9 @@ export default async function HomePage() {
     ]);
   } catch { /* API offline */ }
 
-  const featured = home?.featured?.length ? home.featured : newest?.data || DEMO_PRODUCTS;
-  const trendingProducts = home?.trending?.length ? home.trending : trending?.data || DEMO_PRODUCTS.slice().reverse();
-  const popularProducts = popular?.data || [];
+  const featured = home?.featured?.length ? home.featured : newest?.data?.length ? newest.data : DEMO_PRODUCTS;
+  const trendingProducts = home?.trending?.length ? home.trending : trending?.data?.length ? trending.data : DEMO_PRODUCTS.slice().reverse();
+  const popularProducts = popular?.data?.length ? popular.data : [];
 
   return (
     <>
@@ -53,7 +53,7 @@ export default async function HomePage() {
       {popularProducts.length > 0 && (
         <ProductGridSection
           title="Popular this week"
-          subtitle="Most loved items on Reloom"
+          subtitle="Most loved items on Thrift Store"
           products={popularProducts}
           href="/browse?sort=popular"
         />
@@ -63,7 +63,7 @@ export default async function HomePage() {
       <section className="container-page py-6">
         <div className="overflow-hidden rounded-3xl bg-ink-900 px-8 py-12 text-center text-white sm:px-14 sm:py-16">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-300">
-            Sell with Reloom
+            Sell with Thrift Store
           </p>
           <h2 className="mx-auto mt-3 max-w-xl font-display text-3xl font-semibold tracking-tight sm:text-4xl">
             List in minutes. Get paid securely.

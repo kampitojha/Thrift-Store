@@ -30,12 +30,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 type DashboardData = {
   revenue: {
-    totalGMV: number;
-    todayRevenue: number;
-    monthRevenue: number;
-    totalCommission: number;
-    gmvGrowth: number;
-    monthGrowth: number;
+    gmv: number;
+    gmvToday: number;
+    gmvMonth: number;
+    commission: number;
   };
   users: {
     total: number;
@@ -45,12 +43,13 @@ type DashboardData = {
   };
   sellers: {
     total: number;
-    pendingVerification: number;
+    pending: number;
     verified: number;
   };
   products: {
     total: number;
-    pendingReview: number;
+    pending: number;
+    newToday: number;
     active: number;
   };
   orders: {
@@ -59,15 +58,15 @@ type DashboardData = {
     pending: number;
     cancelled: number;
   };
-  pendingActions: {
+  pending: {
     refunds: number;
     payouts: number;
     disputes: number;
     reports: number;
     tickets: number;
   };
-  topCategories: Array<{ name: string; productCount: number; revenuePaise: number }>;
-  topSellers: Array<{ id: string; storeName: string; avatarUrl?: string; revenuePaise: number; productCount: number }>;
+  topCategories: Array<{ id: string; name: string; slug: string; _count: { products: number } }>;
+  topSellers: Array<{ id: string; storeName: string; storeSlug: string; totalSales: number; rating: number; userId: string; _count: { payouts: number } }>;
   recentUsers: Array<{ id: string; username: string; displayName?: string; avatarUrl?: string; role: string; createdAt: string }>;
 };
 
@@ -147,18 +146,23 @@ export default function AdminDashboardPage() {
 
   if (!data) return null;
 
+  const gmv = Number(data.revenue.gmv) || 0;
+  const gmvToday = Number(data.revenue.gmvToday) || 0;
+  const gmvMonth = Number(data.revenue.gmvMonth) || 0;
+  const commission = Number(data.revenue.commission) || 0;
+
   const revenueCards = [
     {
       label: 'Total GMV',
-      value: formatINR(data.revenue.totalGMV),
-      sub: data.revenue.gmvGrowth > 0 ? `+${data.revenue.gmvGrowth}% all time` : 'All time',
+      value: formatINR(gmv),
+      sub: 'All time',
       icon: IndianRupee,
       color: 'bg-brand-50 text-brand-700',
       iconBg: 'bg-brand-100',
     },
     {
       label: 'Today',
-      value: formatINR(data.revenue.todayRevenue),
+      value: formatINR(gmvToday),
       sub: 'Revenue today',
       icon: TrendingUp,
       color: 'bg-emerald-50 text-emerald-700',
@@ -166,15 +170,15 @@ export default function AdminDashboardPage() {
     },
     {
       label: 'This Month',
-      value: formatINR(data.revenue.monthRevenue),
-      sub: data.revenue.monthGrowth > 0 ? `+${data.revenue.monthGrowth}% vs last month` : 'This month',
+      value: formatINR(gmvMonth),
+      sub: 'This month',
       icon: Activity,
       color: 'bg-blue-50 text-blue-700',
       iconBg: 'bg-blue-100',
     },
     {
       label: 'Commission',
-      value: formatINR(data.revenue.totalCommission),
+      value: formatINR(commission),
       sub: 'Platform earnings',
       icon: Tag,
       color: 'bg-amber-50 text-amber-700',
@@ -191,13 +195,13 @@ export default function AdminDashboardPage() {
 
   const sellerCards = [
     { label: 'Total Sellers', value: data.sellers.total, icon: Store, link: '/admin/sellers' },
-    { label: 'Pending Verification', value: data.sellers.pendingVerification, icon: Clock, link: '/admin/sellers', highlight: true },
+    { label: 'Pending Verification', value: data.sellers.pending, icon: Clock, link: '/admin/sellers', highlight: true },
     { label: 'Verified', value: data.sellers.verified, icon: ShieldCheck, link: '/admin/sellers' },
   ];
 
   const productCards = [
     { label: 'Total Products', value: data.products.total, icon: Package, link: '/admin/products' },
-    { label: 'Pending Review', value: data.products.pendingReview, icon: Clock, link: '/admin/products', highlight: true },
+    { label: 'Pending Review', value: data.products.pending, icon: Clock, link: '/admin/products', highlight: true },
     { label: 'Active', value: data.products.active, icon: Tag, link: '/admin/products' },
   ];
 
@@ -209,11 +213,11 @@ export default function AdminDashboardPage() {
   ];
 
   const actionItems = [
-    { label: 'Refund Requests', value: data.pendingActions.refunds, href: '/admin/refunds', icon: RefreshCcw },
-    { label: 'Pending Payouts', value: data.pendingActions.payouts, href: '/admin/payouts', icon: IndianRupee },
-    { label: 'Open Disputes', value: data.pendingActions.disputes, href: '/admin/disputes', icon: ShieldCheck },
-    { label: 'Reports', value: data.pendingActions.reports, href: '/admin/reports', icon: FileText },
-    { label: 'Support Tickets', value: data.pendingActions.tickets, href: '/admin/audit', icon: AlertTriangle },
+    { label: 'Refund Requests', value: data.pending.refunds, href: '/admin/refunds', icon: RefreshCcw },
+    { label: 'Pending Payouts', value: data.pending.payouts, href: '/admin/payouts', icon: IndianRupee },
+    { label: 'Open Disputes', value: data.pending.disputes, href: '/admin/disputes', icon: ShieldCheck },
+    { label: 'Reports', value: data.pending.reports, href: '/admin/reports', icon: FileText },
+    { label: 'Support Tickets', value: data.pending.tickets, href: '/admin/audit', icon: AlertTriangle },
   ];
 
   const totalPendingActions = actionItems.reduce((sum, a) => sum + a.value, 0);
@@ -451,12 +455,9 @@ export default function AdminDashboardPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-ink-800">{cat.name}</p>
                     <p className="text-xs text-ink-400">
-                      {cat.productCount} products
+                      {cat._count.products} products
                     </p>
                   </div>
-                  <span className="text-sm font-semibold text-ink-700">
-                    {formatINR(cat.revenuePaise)}
-                  </span>
                 </div>
               ))}
             </div>
@@ -480,20 +481,13 @@ export default function AdminDashboardPage() {
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-ink-50 text-xs font-semibold text-ink-500">
                     {i + 1}
                   </span>
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ink-200 text-xs font-semibold text-ink-600">
-                    {seller.avatarUrl ? (
-                      <img src={seller.avatarUrl} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      seller.storeName.slice(0, 1).toUpperCase()
-                    )}
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink-200 text-xs font-semibold text-ink-600">
+                    {seller.storeName.slice(0, 1).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-ink-800">{seller.storeName}</p>
-                    <p className="text-xs text-ink-400">{seller.productCount} products</p>
+                    <p className="text-xs text-ink-400">{seller.totalSales} sales</p>
                   </div>
-                  <span className="text-sm font-semibold text-ink-700">
-                    {formatINR(seller.revenuePaise)}
-                  </span>
                 </div>
               ))}
             </div>

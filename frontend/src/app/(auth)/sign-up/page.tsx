@@ -77,7 +77,7 @@ export default function SignUpPage() {
         </div>
         <h1 className="font-display text-2xl font-semibold text-ink-900">Account created!</h1>
         <p className="mt-2 text-sm text-ink-500">
-          Welcome to Reloom. We&apos;ve sent a verification email to <strong className="text-ink-700">{form.email}</strong>.
+          Welcome to Thrift Store. We&apos;ve sent a verification email to <strong className="text-ink-700">{form.email}</strong>.
         </p>
         <div className="mt-6 space-y-2">
           <Link href="/"><Button variant="brand" className="w-full">Browse listings</Button></Link>
@@ -91,7 +91,7 @@ export default function SignUpPage() {
 
   return (
     <div className="w-full max-w-md rounded-3xl border border-ink-100 bg-white p-8 shadow-lift">
-      <h1 className="font-display text-2xl font-semibold text-ink-900">Join Reloom</h1>
+      <h1 className="font-display text-2xl font-semibold text-ink-900">Join Thrift Store</h1>
       <p className="mt-1 text-sm text-ink-500">Buy & sell pre-loved treasures.</p>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-4">

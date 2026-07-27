@@ -17,22 +17,25 @@ const display = Fraunces({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Reloom — Premium Thrift Marketplace',
-    template: '%s · Reloom',
+    default: 'Thrift Store — Premium Thrift Marketplace',
+    template: '%s · Thrift Store',
   },
   description:
     'Buy and sell pre-loved fashion, sneakers, luxury, electronics and more. Second chances. First-class finds.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   openGraph: {
     type: 'website',
-    siteName: 'Reloom',
-    title: 'Reloom — Premium Thrift Marketplace',
+    siteName: 'Thrift Store',
+    title: 'Thrift Store — Premium Thrift Marketplace',
     description: 'India\'s premium thrift marketplace.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Reloom',
+    title: 'Thrift Store',
     description: 'Second chances. First-class finds.',
+  },
+  icons: {
+    icon: '/favicon.svg',
   },
   robots: { index: true, follow: true },
 };
@@ -46,7 +49,8 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${sans.variable} ${display.variable}`}>
-      <body className="min-h-screen font-sans">
+      <body className="min-h-screen font-sans" suppressHydrationWarning>
+        <script dangerouslySetInnerHTML={{ __html: 'var o=new MutationObserver(function(){document.querySelectorAll("[bis_skin_checked]").forEach(function(e){e.removeAttribute("bis_skin_checked")})});o.observe(document.documentElement,{attributes:true,subtree:true,attributeFilter:["bis_skin_checked"]})' }} />
         <Providers>{children}</Providers>
         <script src="https://checkout.razorpay.com/v1/checkout.js" async />
       </body>

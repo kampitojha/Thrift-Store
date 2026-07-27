@@ -39,6 +39,30 @@ export class JobQueueService {
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
   ) {}
 
+  async checkHealth() {
+    const start = Date.now();
+    try {
+      // Check Redis list length as a basic check
+      const pendingCount = await this.redis.llen('queue:jobs');
+      const stats = await this.getQueueStats();
+      
+      return {
+        status: 'healthy' as const,
+        latency: Date.now() - start,
+        details: {
+          pendingInRedis: pendingCount,
+          ...stats,
+        },
+      };
+    } catch (err) {
+      return {
+        status: 'unhealthy' as const,
+        latency: Date.now() - start,
+        error: (err as Error).message,
+      };
+    }
+  }
+
   async enqueue(type: string, data: Record<string, unknown>, opts?: {
     priority?: JobPriority;
     scheduledAt?: Date;

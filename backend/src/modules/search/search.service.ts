@@ -68,6 +68,22 @@ export class SearchService implements OnModuleInit {
     }
   }
 
+  async checkHealth() {
+    if (!this.ready || !this.client) {
+      return { status: 'unhealthy', latency: 0, error: 'Meilisearch client not initialized' };
+    }
+    const start = Date.now();
+    try {
+      const health = await this.client.health();
+      return {
+        status: health.status === 'available' ? 'healthy' : 'unhealthy',
+        latency: Date.now() - start,
+      };
+    } catch (err) {
+      return { status: 'unhealthy', latency: Date.now() - start, error: (err as Error).message };
+    }
+  }
+
   async searchProducts(dto: SearchProductsDto) {
     if (!this.ready || !this.index) return null;
 

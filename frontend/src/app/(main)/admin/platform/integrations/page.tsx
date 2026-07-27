@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -287,16 +287,15 @@ export default function AdminIntegrationsPage() {
                   )}
 
                   <div className="mt-4 flex items-center gap-2 border-t border-ink-100 pt-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      asChild
+                    <a
+                      href={integration.docs}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
                     >
-                      <a href={integration.docs} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="mr-1 h-3.5 w-3.5" />
-                        View Docs
-                      </a>
-                    </Button>
+                      <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
+                      View Docs
+                    </a>
                     <Button
                       variant={integration.status === 'connected' ? 'default' : 'brand'}
                       size="sm"

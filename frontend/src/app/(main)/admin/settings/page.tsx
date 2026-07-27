@@ -52,9 +52,9 @@ type PlatformSettings = {
 };
 
 const DEFAULTS: PlatformSettings = {
-  marketplaceName: 'Reloom',
+  marketplaceName: 'Thrift Store',
   tagline: 'Premium Thrift Marketplace',
-  supportEmail: 'support@reloom.com',
+  supportEmail: 'support@thriftstore.com',
   supportPhone: '',
   currency: 'INR',
   language: 'en',
@@ -71,7 +71,7 @@ const DEFAULTS: PlatformSettings = {
   linkedinUrl: '',
   youtubeUrl: '',
   pinterestUrl: '',
-  defaultMetaTitle: 'Reloom — Premium Thrift Marketplace',
+  defaultMetaTitle: 'Thrift Store — Premium Thrift Marketplace',
   defaultMetaDescription:
     'Buy and sell pre-loved fashion, sneakers, luxury, electronics and more.',
   defaultOgImageUrl: '',

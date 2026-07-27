@@ -121,7 +121,7 @@ export default function SignInPage() {
       </div>
 
       <p className="mt-6 text-center text-sm text-ink-500">
-        New to Reloom?{' '}
+        New to Thrift Store?{' '}
         <Link href="/sign-up" className="font-medium text-brand-700 hover:underline">
           Create account
         </Link>

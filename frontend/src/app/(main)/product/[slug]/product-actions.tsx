@@ -7,7 +7,7 @@ import { useCartStore } from '@/stores/cart-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { useRouter } from 'next/navigation';
 
-export function ProductActions({ productId }: { productId: string; slug: string }) {
+export function ProductActions({ productId, isDemo }: { productId: string; slug: string; isDemo?: boolean }) {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const addItem = useCartStore((s) => s.addItem);
@@ -38,11 +38,12 @@ export function ProductActions({ productId }: { productId: string; slug: string 
           size="lg"
           variant="brand"
           className="flex-1"
-          disabled={loading}
+          disabled={loading || isDemo}
           onClick={addToCart}
+          title={isDemo ? 'Sign in to purchase this item' : undefined}
         >
           <ShoppingBag className="h-4 w-4" />
-          {loading ? 'Adding…' : 'Add to bag'}
+          {loading ? 'Adding…' : isDemo ? 'Sign in to purchase' : 'Add to bag'}
         </Button>
         <Button size="lg" variant="outline" className="flex-1" onClick={() => router.push('/messages')}>
           <MessageCircle className="h-4 w-4" />

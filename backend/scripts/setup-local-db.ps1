@@ -1,4 +1,4 @@
-# Setup Reloom DB on LOCAL PostgreSQL (not Docker)
+# Setup Thrift Store DB on LOCAL PostgreSQL (not Docker)
 # Usage (PowerShell):
 #   $env:PGPASSWORD = "your_postgres_password"
 #   .\scripts\setup-local-db.ps1

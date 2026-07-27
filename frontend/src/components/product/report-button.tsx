@@ -55,7 +55,7 @@ export function ReportButton({ productId }: { productId: string }) {
         <DialogBody>
           {done ? (
             <p className="text-sm text-ink-600">
-              Thanks for helping keep Reloom safe. Our team will review this listing.
+              Thanks for helping keep Thrift Store safe. Our team will review this listing.
             </p>
           ) : (
             <div className="space-y-4">

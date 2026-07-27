@@ -1,4 +1,4 @@
-# Reloom Backend — standalone build
+# Thrift Store Backend — standalone build
 FROM node:20-alpine AS base
 WORKDIR /app
 

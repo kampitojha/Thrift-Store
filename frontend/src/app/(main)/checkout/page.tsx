@@ -29,7 +29,7 @@ type CheckoutPreview = {
 
 const PAYMENT_METHODS = [
   { value: 'RAZORPAY', label: 'Credit/Debit Card, UPI & Net Banking', icon: CreditCard, desc: 'Pay via Razorpay' },
-  { value: 'WALLET', label: 'Wallet Balance', icon: Wallet, desc: 'Pay using your Reloom wallet' },
+  { value: 'WALLET', label: 'Wallet Balance', icon: Wallet, desc: 'Pay using your Thrift Store wallet' },
   { value: 'COD', label: 'Cash on Delivery', icon: Truck, desc: 'Pay when you receive' },
 ];
 
@@ -70,7 +70,7 @@ export default function CheckoutPage() {
         const addrs = Array.isArray(addrRes) ? addrRes : ((addrRes as any).data ?? []);
         setAddresses(addrs);
         setPreview(initRes.preview);
-        const def = addrs.find((a) => a.isDefault) || addrs[0];
+        const def = addrs.find((a: Address) => a.isDefault) || addrs[0];
         if (def) setSelectedAddressId(def.id);
       } catch { setError('Failed to initialize checkout'); }
       finally { setLoading(false); }
@@ -127,7 +127,7 @@ export default function CheckoutPage() {
         key: intent.razorpayKeyId,
         amount: intent.amountPaise,
         currency: intent.currency,
-        name: 'Reloom',
+        name: 'Thrift Store',
         order_id: intent.razorpayOrderId,
         handler: async (response: any) => {
           await apiClient.post(`/payments/${intent.orderId}/verify`, {

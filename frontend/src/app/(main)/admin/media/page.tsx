@@ -230,7 +230,12 @@ export default function AdminMediaPage() {
       };
       reader.onerror = () => {
         processed++;
-          if (processed === files!.length) {
+        if (processed === files!.length) {
+          persistMedia([...newItems, ...mediaItems]);
+          setUploading(false);
+        }
+      };
+    });
   }
 
   function handleDelete(media: MediaItem) {
@@ -265,8 +270,9 @@ export default function AdminMediaPage() {
       return (
         item.filename.toLowerCase().includes(q) ||
         item.tags.some((t) => t.toLowerCase().includes(q))
-      );
-    }
+  );
+}
+
     return true;
   });
 

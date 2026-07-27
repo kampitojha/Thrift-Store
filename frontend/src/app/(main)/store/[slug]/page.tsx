@@ -13,11 +13,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const store = await getStore(slug);
     return {
-      title: `${store.storeName} · Reloom`,
-      description: store.storeDescription || `Shop from ${store.storeName} on Reloom.`,
+      title: `${store.storeName} · Thrift Store`,
+      description: store.storeDescription || `Shop from ${store.storeName} on Thrift Store.`,
     };
   } catch {
-    return { title: 'Store · Reloom' };
+    return { title: 'Store · Thrift Store' };
   }
 }
 
@@ -151,7 +151,7 @@ export default async function StorePage({ params, searchParams }: Props) {
                   <article>
                     <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-ink-100">
                       <img
-                        src={p.thumbnailUrl || 'https://placehold.co/600x750/f2e8db/5d362a?text=Reloom'}
+                        src={p.thumbnailUrl || 'https://placehold.co/600x750/f2e8db/5d362a?text=TS'}
                         alt={p.title}
                         className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                       />

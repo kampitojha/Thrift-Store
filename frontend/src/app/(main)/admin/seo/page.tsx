@@ -66,19 +66,19 @@ type SeoEntity = {
 };
 
 const DEFAULT_SETTINGS: SeoSettings = {
-  defaultMetaTitleFormat: '{page_title} | Reloom',
+  defaultMetaTitleFormat: '{page_title} | Thrift Store',
   defaultMetaDescriptionFormat:
-    'Shop {page_title} on Reloom. Premium thrift marketplace for pre-loved fashion, sneakers, electronics & more.',
+    'Shop {page_title} on Thrift Store. Premium thrift marketplace for pre-loved fashion, sneakers, electronics & more.',
   ogImageUrl: '',
-  twitterHandle: '@reloom',
+  twitterHandle: '@thriftstore',
   facebookAppId: '',
   googleAnalyticsId: 'G-XXXXXXXXXX',
-  organizationName: 'Reloom',
+  organizationName: 'Thrift Store',
   organizationLogoUrl: '',
   sameAsUrls: [
-    'https://facebook.com/reloom',
-    'https://twitter.com/reloom',
-    'https://instagram.com/reloom',
+    'https://facebook.com/thriftstore',
+    'https://twitter.com/thriftstore',
+    'https://instagram.com/thriftstore',
   ],
   robotsRules: [
     { id: 'r1', path: '/', allow: true },
@@ -98,18 +98,18 @@ const DEFAULT_SETTINGS: SeoSettings = {
 };
 
 const SAMPLE_ENTITIES: SeoEntity[] = [
-  { id: 'p1', type: 'page', name: 'Homepage', url: '/', seoTitle: 'Reloom — Premium Thrift Marketplace', seoDescription: 'Buy and sell pre-loved fashion, sneakers, luxury, electronics and more.' },
-  { id: 'p2', type: 'page', name: 'About Us', url: '/about', seoTitle: 'About Reloom | Premium Thrift Marketplace', seoDescription: 'Learn about Reloom, the premium thrift marketplace connecting buyers and sellers of pre-loved goods.' },
-  { id: 'p3', type: 'page', name: 'Contact', url: '/contact', seoTitle: 'Contact Us | Reloom', seoDescription: 'Get in touch with the Reloom team. We are here to help with your questions and concerns.' },
-  { id: 'b1', type: 'blog', name: 'Summer Collection 2025', url: '/blogs/summer-collection-2025', seoTitle: 'Summer Collection 2025 | Reloom Blog', seoDescription: 'Discover the hottest summer trends in our latest collection.' },
-  { id: 'b2', type: 'blog', name: 'How to Style Vintage Denim', url: '/blogs/how-to-style-vintage-denim', seoTitle: 'How to Style Vintage Denim | Reloom Blog', seoDescription: 'Tips and tricks for styling vintage denim pieces from our curated collection.' },
-  { id: 'b3', type: 'blog', name: 'Sustainable Fashion Guide', url: '/blogs/sustainable-fashion-guide', seoTitle: 'Sustainable Fashion Guide | Reloom Blog', seoDescription: 'Your complete guide to building a sustainable wardrobe with thrifted pieces.' },
-  { id: 'c1', type: 'category', name: 'Sneakers', url: '/category/sneakers', seoTitle: 'Buy Pre-Loved Sneakers Online | Reloom', seoDescription: 'Shop authentic pre-loved sneakers from top brands. curated collection of vintage and limited edition sneakers.' },
-  { id: 'c2', type: 'category', name: 'Luxury Bags', url: '/category/luxury-bags', seoTitle: 'Pre-Owned Luxury Bags | Reloom', seoDescription: 'Authenticated pre-owned luxury handbags from Gucci, Louis Vuitton, Chanel and more.' },
-  { id: 'c3', type: 'category', name: 'Vintage Clothing', url: '/category/vintage-clothing', seoTitle: 'Vintage Clothing Online | Reloom', seoDescription: 'Unique vintage clothing pieces curated for style enthusiasts. Shop retro fashion.' },
-  { id: 'br1', type: 'brand', name: 'Nike', url: '/brands/nike', seoTitle: 'Nike Pre-Loved | Reloom', seoDescription: 'Shop pre-loved Nike sneakers, apparel and accessories. authenticated and quality checked.' },
-  { id: 'br2', type: 'brand', name: 'Levi\'s', url: '/brands/levis', seoTitle: 'Levi\'s Vintage & Pre-Loved | Reloom', seoDescription: 'Curated collection of pre-loved Levi\'s denim jackets, jeans and vintage pieces.' },
-  { id: 'br3', type: 'brand', name: 'Gucci', url: '/brands/gucci', seoTitle: 'Pre-Owned Gucci | Reloom', seoDescription: 'Authenticated pre-owned Gucci bags, accessories and clothing. luxury resale.' },
+  { id: 'p1', type: 'page', name: 'Homepage', url: '/', seoTitle: 'Thrift Store — Premium Thrift Marketplace', seoDescription: 'Buy and sell pre-loved fashion, sneakers, luxury, electronics and more.' },
+  { id: 'p2', type: 'page', name: 'About Us', url: '/about', seoTitle: 'About Thrift Store | Premium Thrift Marketplace', seoDescription: 'Learn about Thrift Store, the premium thrift marketplace connecting buyers and sellers of pre-loved goods.' },
+  { id: 'p3', type: 'page', name: 'Contact', url: '/contact', seoTitle: 'Contact Us | Thrift Store', seoDescription: 'Get in touch with the Thrift Store team. We are here to help with your questions and concerns.' },
+  { id: 'b1', type: 'blog', name: 'Summer Collection 2025', url: '/blogs/summer-collection-2025', seoTitle: 'Summer Collection 2025 | Thrift Store Blog', seoDescription: 'Discover the hottest summer trends in our latest collection.' },
+  { id: 'b2', type: 'blog', name: 'How to Style Vintage Denim', url: '/blogs/how-to-style-vintage-denim', seoTitle: 'How to Style Vintage Denim | Thrift Store Blog', seoDescription: 'Tips and tricks for styling vintage denim pieces from our curated collection.' },
+  { id: 'b3', type: 'blog', name: 'Sustainable Fashion Guide', url: '/blogs/sustainable-fashion-guide', seoTitle: 'Sustainable Fashion Guide | Thrift Store Blog', seoDescription: 'Your complete guide to building a sustainable wardrobe with thrifted pieces.' },
+  { id: 'c1', type: 'category', name: 'Sneakers', url: '/category/sneakers', seoTitle: 'Buy Pre-Loved Sneakers Online | Thrift Store', seoDescription: 'Shop authentic pre-loved sneakers from top brands. curated collection of vintage and limited edition sneakers.' },
+  { id: 'c2', type: 'category', name: 'Luxury Bags', url: '/category/luxury-bags', seoTitle: 'Pre-Owned Luxury Bags | Thrift Store', seoDescription: 'Authenticated pre-owned luxury handbags from Gucci, Louis Vuitton, Chanel and more.' },
+  { id: 'c3', type: 'category', name: 'Vintage Clothing', url: '/category/vintage-clothing', seoTitle: 'Vintage Clothing Online | Thrift Store', seoDescription: 'Unique vintage clothing pieces curated for style enthusiasts. Shop retro fashion.' },
+  { id: 'br1', type: 'brand', name: 'Nike', url: '/brands/nike', seoTitle: 'Nike Pre-Loved | Thrift Store', seoDescription: 'Shop pre-loved Nike sneakers, apparel and accessories. authenticated and quality checked.' },
+  { id: 'br2', type: 'brand', name: 'Levi\'s', url: '/brands/levis', seoTitle: 'Levi\'s Vintage & Pre-Loved | Thrift Store', seoDescription: 'Curated collection of pre-loved Levi\'s denim jackets, jeans and vintage pieces.' },
+  { id: 'br3', type: 'brand', name: 'Gucci', url: '/brands/gucci', seoTitle: 'Pre-Owned Gucci | Thrift Store', seoDescription: 'Authenticated pre-owned Gucci bags, accessories and clothing. luxury resale.' },
 ];
 
 const FREQUENCY_OPTIONS = [
@@ -540,7 +540,7 @@ export default function AdminSeoPage() {
         >
           <FieldRow label="Default Meta Title Format">
             <Input
-              placeholder="{page_title} | Reloom"
+              placeholder="{page_title} | Thrift Store"
               value={settings.defaultMetaTitleFormat}
               onChange={(e) => updateField('defaultMetaTitleFormat', e.target.value)}
             />
@@ -550,7 +550,7 @@ export default function AdminSeoPage() {
           </FieldRow>
           <FieldRow label="Default Meta Description Format">
             <Textarea
-              placeholder="Shop {page_title} on Reloom..."
+              placeholder="Shop {page_title} on Thrift Store..."
               value={settings.defaultMetaDescriptionFormat}
               onChange={(e) => updateField('defaultMetaDescriptionFormat', e.target.value)}
               className="min-h-[80px]"
@@ -739,7 +739,7 @@ export default function AdminSeoPage() {
 
         {/* Sitemap Settings */}
         <SectionCard
-          icon={Sitemap}
+          icon={FileJson}
           title="Sitemap Settings"
           badge="xml"
           saving={savingSection === 'Sitemap'}

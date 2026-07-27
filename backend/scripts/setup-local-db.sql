@@ -1,5 +1,5 @@
 -- Run against your local PostgreSQL (port 5432) as superuser `postgres`
--- Creates app user + database for Reloom
+-- Creates app user + database for Thrift Store
 
 DO $$
 BEGIN

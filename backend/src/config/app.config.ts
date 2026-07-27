@@ -1,7 +1,7 @@
 export default () => ({
   nodeEnv: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT || '4000', 10),
-  appName: process.env.APP_NAME || 'Reloom',
+  appName: process.env.APP_NAME || 'Thrift Store',
   appUrl: process.env.APP_URL || 'http://localhost:3000',
   apiUrl: process.env.API_URL || 'http://localhost:4000',
   apiPrefix: process.env.API_PREFIX || 'api/v1',
@@ -9,7 +9,7 @@ export default () => ({
 
   databaseUrl: process.env.DATABASE_URL,
   redisUrl: process.env.REDIS_URL || 'redis://localhost:6379',
-  redisPrefix: process.env.REDIS_PREFIX || 'reloom:',
+  redisPrefix: process.env.REDIS_PREFIX || 'thriftstore:',
 
   meiliHost: process.env.MEILI_HOST || 'http://localhost:7700',
   meiliMasterKey: process.env.MEILI_MASTER_KEY || '',
@@ -34,7 +34,7 @@ export default () => ({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     region: process.env.AWS_REGION || 'ap-south-1',
-    bucket: process.env.AWS_S3_BUCKET || 'reloom-media',
+    bucket: process.env.AWS_S3_BUCKET || 'thriftstore-media',
     cdnUrl: process.env.AWS_S3_CDN_URL,
   },
   cloudinary: {
@@ -44,7 +44,7 @@ export default () => ({
   },
 
   resendApiKey: process.env.RESEND_API_KEY,
-  emailFrom: process.env.EMAIL_FROM || 'Reloom <noreply@reloom.com>',
+  emailFrom: process.env.EMAIL_FROM || 'Thrift Store <noreply@thriftstore.com>',
 
   ai: {
     provider: process.env.AI_PROVIDER || 'spacexai',

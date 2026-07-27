@@ -154,7 +154,7 @@ export class CreateProductDto {
   @IsArray()
   @ArrayMinSize(1)
   @ArrayMaxSize(12)
-  @IsUrl({}, { each: true })
+  @IsUrl({ require_tld: false }, { each: true })
   mediaUrls!: string[];
 
   @ApiPropertyOptional({ description: 'Publish immediately' })

@@ -150,7 +150,7 @@ export default function AdminProductDetailPage() {
   const toggleFeature = async () => {
     setActionLoading('feature');
     try {
-      await apiClient.patch(`/admin/products/${productId}/feature`, { isFeatured: !product?.isFeatured });
+      await apiClient.patch(`/admin/products/${productId}/trending`, { isTrending: !product?.isFeatured });
       await fetchProduct();
     } catch { /* ignore */ } finally { setActionLoading(''); }
   };

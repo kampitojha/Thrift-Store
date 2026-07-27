@@ -1,39 +1,17 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
-import { PrismaService } from '../../prisma/prisma.service';
-import { RedisService } from '../../config/redis.module';
+import { HealthService, HealthCheckResult } from '../../common/infrastructure/health.service';
 
 @ApiTags('Health')
 @Controller('health')
 export class HealthController {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly redis: RedisService,
-  ) {}
+  constructor(private readonly health: HealthService) {}
 
   @Public()
   @Get()
-  async check() {
-    const checks: Record<string, string> = { api: 'ok' };
-    try {
-      await this.prisma.$queryRaw`SELECT 1`;
-      checks.database = 'ok';
-    } catch {
-      checks.database = 'error';
-    }
-    try {
-      await this.redis.client.ping();
-      checks.redis = 'ok';
-    } catch {
-      checks.redis = 'error';
-    }
-    const healthy = Object.values(checks).every((v) => v === 'ok');
-    return {
-      status: healthy ? 'healthy' : 'degraded',
-      checks,
-      timestamp: new Date().toISOString(),
-      service: 'reloom-api',
-    };
+  @ApiOperation({ summary: 'Check platform health status' })
+  async check(): Promise<HealthCheckResult> {
+    return this.health.check();
   }
 }

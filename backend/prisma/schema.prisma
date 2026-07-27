@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// Reloom — Production Prisma Schema
+// Thrift Store — Production Prisma Schema
 // Normalized for multi-million user scale. Soft deletes, indexes, money in paise.
 // ═══════════════════════════════════════════════════════════════════════════
 

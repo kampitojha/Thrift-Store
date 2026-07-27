@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import apiClient from '@/lib/api';
+import { apiClient } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -169,7 +169,7 @@ export default function NotificationsPage() {
           <BellRing className="h-6 w-6" aria-hidden="true" />
           <h1 className="text-2xl font-bold">Notifications</h1>
           {notifications && notifications.unreadCount > 0 && (
-            <Badge variant="destructive" aria-label={`${notifications.unreadCount} unread notifications`}>
+            <Badge variant="default" className="bg-red-500 text-white" aria-label={`${notifications.unreadCount} unread notifications`}>
               {notifications.unreadCount}
             </Badge>
           )}
@@ -249,7 +249,7 @@ export default function NotificationsPage() {
               {cat}
               {count > 0 && (
                 <Badge
-                  variant={category === cat ? 'outline' : 'secondary'}
+                  variant={category === cat ? 'outline' : 'default'}
                   className="ml-0.5 h-5 px-1.5 text-[10px]"
                 >
                   {count}
@@ -387,7 +387,7 @@ export default function NotificationsPage() {
                         <SevIcon className="h-3 w-3" aria-hidden="true" />
                         {n.severity}
                       </Badge>
-                      <Badge variant="secondary" className="inline-flex items-center gap-1 capitalize">
+                      <Badge variant="outline" className="inline-flex items-center gap-1 capitalize">
                         <CatIcon className="h-3 w-3" aria-hidden="true" />
                         {n.category}
                       </Badge>

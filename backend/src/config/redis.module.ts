@@ -16,39 +16,59 @@ export class RedisService implements OnModuleDestroy {
   }
 
   async get<T = string>(key: string): Promise<T | null> {
-    const val = await this.redis.get(this.prefix(key));
-    if (val == null) return null;
     try {
-      return JSON.parse(val) as T;
+      const val = await this.redis.get(this.prefix(key));
+      if (val == null) return null;
+      try {
+        return JSON.parse(val) as T;
+      } catch {
+        return val as T;
+      }
     } catch {
-      return val as T;
+      return null;
     }
   }
 
   async set(key: string, value: unknown, ttlSeconds?: number): Promise<void> {
-    const payload = typeof value === 'string' ? value : JSON.stringify(value);
-    if (ttlSeconds) {
-      await this.redis.set(this.prefix(key), payload, 'EX', ttlSeconds);
-    } else {
-      await this.redis.set(this.prefix(key), payload);
+    try {
+      const payload = typeof value === 'string' ? value : JSON.stringify(value);
+      if (ttlSeconds) {
+        await this.redis.set(this.prefix(key), payload, 'EX', ttlSeconds);
+      } else {
+        await this.redis.set(this.prefix(key), payload);
+      }
+    } catch {
+      /* Redis unavailable — skip */
     }
   }
 
   async del(key: string): Promise<void> {
-    await this.redis.del(this.prefix(key));
+    try {
+      await this.redis.del(this.prefix(key));
+    } catch {
+      /* Redis unavailable — skip */
+    }
   }
 
   async delPattern(pattern: string): Promise<void> {
-    const keys = await this.redis.keys(this.prefix(pattern));
-    if (keys.length) await this.redis.del(...keys);
+    try {
+      const keys = await this.redis.keys(this.prefix(pattern));
+      if (keys.length) await this.redis.del(...keys);
+    } catch {
+      /* Redis unavailable — skip */
+    }
   }
 
   async incr(key: string, ttlSeconds?: number): Promise<number> {
-    const n = await this.redis.incr(this.prefix(key));
-    if (n === 1 && ttlSeconds) {
-      await this.redis.expire(this.prefix(key), ttlSeconds);
+    try {
+      const n = await this.redis.incr(this.prefix(key));
+      if (n === 1 && ttlSeconds) {
+        await this.redis.expire(this.prefix(key), ttlSeconds);
+      }
+      return n;
+    } catch {
+      return 0;
     }
-    return n;
   }
 
   get client() {

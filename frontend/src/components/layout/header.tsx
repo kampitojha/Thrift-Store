@@ -103,10 +103,10 @@ export function Header() {
 
           <Link href="/" className="flex shrink-0 items-center gap-2">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-ink-900 text-sm font-bold tracking-tight text-white">
-              R
+              T
             </span>
             <span className="font-display text-xl font-semibold tracking-tight text-ink-900">
-              Reloom
+              Thrift Store
             </span>
           </Link>
 
@@ -152,7 +152,7 @@ export function Header() {
                     >
                       <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-ink-100">
                         <img
-                          src={p.thumbnailUrl || 'https://placehold.co/100x100/f2e8db/5d362a?text=R'}
+                          src={p.thumbnailUrl || 'https://placehold.co/100x100/f2e8db/5d362a?text=T'}
                           alt=""
                           className="h-full w-full object-cover"
                         />

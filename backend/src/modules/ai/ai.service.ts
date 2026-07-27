@@ -32,7 +32,7 @@ export class AiService {
       take: 20,
     });
 
-    const prompt = `You are Reloom's thrift marketplace listing expert for India.
+    const prompt = `You are Thrift Store's thrift marketplace listing expert for India.
 Generate a high-converting product listing JSON with keys:
 title (max 100 chars), description (80-150 words, engaging), tags (array max 12),
 suggestedCategorySlug, suggestedBrand, estimatedPricePaise (integer INR paise),

@@ -84,7 +84,7 @@ export default function AdminDisputesPage() {
   const handleAction = async (id: string, action: string) => {
     setActionLoading(id);
     try {
-      await apiClient.patch(`/admin/disputes/${id}/${action}`, { note: resolveNote.trim() || undefined });
+      await apiClient.patch(`/admin/disputes/${id}/resolve`, { action, resolution: resolveNote.trim() || undefined });
       setExpandedId(null);
       setResolveNote('');
       await fetchDisputes(meta.page);

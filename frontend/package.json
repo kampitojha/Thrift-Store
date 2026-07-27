@@ -2,7 +2,7 @@
   "name": "reloom-frontend",
   "version": "0.1.0",
   "private": true,
-  "description": "Reloom frontend — Next.js thrift marketplace storefront",
+  "description": "Thrift Store frontend — Next.js thrift marketplace storefront",
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",

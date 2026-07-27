@@ -5,13 +5,18 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  Injectable,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { randomUUID } from 'crypto';
+import { SentryService } from '../infrastructure/sentry.service';
 
+@Injectable()
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
+
+  constructor(private readonly sentry: SentryService) {}
 
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
@@ -38,17 +43,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
     } else if (exception instanceof Error) {
       message = exception.message;
-      this.logger.error(exception.message, exception.stack, request.url);
     }
 
-    if (status >= 500) {
-      this.logger.error(
-        `${request.method} ${request.url} → ${status}`,
-        exception instanceof Error ? exception.stack : String(exception),
-      );
-    }
-
-    response.status(status).json({
+    const errorResponse = {
       success: false,
       statusCode: status,
       message: Array.isArray(message) ? message[0] : message,
@@ -57,6 +54,31 @@ export class AllExceptionsFilter implements ExceptionFilter {
       path: request.url,
       timestamp: new Date().toISOString(),
       requestId,
-    });
+    };
+
+    // Log to console/winston
+    if (status >= 500) {
+      this.logger.error(
+        `${request.method} ${request.url} [${requestId}] → ${status}`,
+        exception instanceof Error ? exception.stack : String(exception),
+      );
+      
+      // Capture 5xx in Sentry
+      this.sentry.captureException(exception as Error, {
+        requestId,
+        path: request.url,
+        method: request.method,
+        status,
+        body: request.body,
+        query: request.query,
+        user: (request as any).user?.id,
+      });
+    } else {
+      this.logger.warn(
+        `${request.method} ${request.url} [${requestId}] → ${status}: ${errorResponse.message}`,
+      );
+    }
+
+    response.status(status).json(errorResponse);
   }
 }

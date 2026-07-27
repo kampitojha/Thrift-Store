@@ -146,6 +146,9 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   }
 
   if (json && typeof json === 'object' && 'data' in json && 'success' in json) {
+    if ('meta' in json && json.meta !== undefined) {
+      return json as T;
+    }
     return (json as { data: T }).data;
   }
   return json as T;

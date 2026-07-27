@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
@@ -313,18 +313,20 @@ export default function QueuesPage() {
           Advanced tools for debugging and managing queues.
         </p>
         <div className="flex flex-wrap gap-3">
-          <Button variant="outline" size="sm" asChild>
-            <a href="/admin/platform/queues/jobs">
-              <List className="mr-1.5 h-4 w-4" />
-              View All Jobs
-            </a>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <a href="/admin/platform/queues/jobs?status=failed">
-              <XCircle className="mr-1.5 h-4 w-4" />
-              Failed Jobs
-            </a>
-          </Button>
+          <a
+            href="/admin/platform/queues/jobs"
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+          >
+            <List className="mr-1.5 h-4 w-4" />
+            View All Jobs
+          </a>
+          <a
+            href="/admin/platform/queues/jobs?status=failed"
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+          >
+            <XCircle className="mr-1.5 h-4 w-4" />
+            Failed Jobs
+          </a>
         </div>
       </section>
 

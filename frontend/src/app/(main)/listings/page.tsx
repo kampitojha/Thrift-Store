@@ -182,7 +182,7 @@ export default function ListingsPage() {
                   <Link href={`/product/${product.slug}`} className="block">
                     <div className="relative aspect-[4/5] overflow-hidden rounded-t-2xl bg-ink-100">
                       <img
-                        src={product.thumbnailUrl || 'https://placehold.co/600x750/f2e8db/5d362a?text=Reloom'}
+                        src={product.thumbnailUrl || 'https://placehold.co/600x750/f2e8db/5d362a?text=TS'}
                         alt={product.title}
                         className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                       />

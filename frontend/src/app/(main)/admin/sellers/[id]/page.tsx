@@ -129,7 +129,7 @@ export default function AdminSellerDetailPage() {
   const approveVerification = async () => {
     setActionLoading('approve');
     try {
-      await apiClient.patch(`/admin/sellers/${sellerId}/verification`, { status: 'APPROVED' });
+      await apiClient.patch(`/admin/sellers/${sellerId}/verify`, { action: 'approve' });
       await fetchSeller();
     } catch { /* ignore */ } finally { setActionLoading(''); }
   };
@@ -137,9 +137,9 @@ export default function AdminSellerDetailPage() {
   const rejectVerification = async () => {
     setActionLoading('reject');
     try {
-      await apiClient.patch(`/admin/sellers/${sellerId}/verification`, {
-        status: 'REJECTED',
-        reason: rejectReason,
+      await apiClient.patch(`/admin/sellers/${sellerId}/verify`, {
+        action: 'reject',
+        notes: rejectReason,
       });
       setShowRejectDialog(false);
       setRejectReason('');
@@ -207,7 +207,7 @@ export default function AdminSellerDetailPage() {
                 {seller.isVerified && <Badge variant="success">Verified</Badge>}
               </div>
               <p className="mt-0.5 text-sm text-ink-500">
-                Owner: {seller.owner.displayName || seller.owner.username} ({seller.owner.email})
+                Owner: {seller.owner?.displayName || seller.owner?.username || 'N/A'} ({seller.owner?.email || '—'})
               </p>
               <div className="mt-1.5 flex items-center gap-2">
                 <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium', VERIFICATION_STYLES[seller.verificationStatus] || 'bg-ink-100 text-ink-600')}>
@@ -239,11 +239,13 @@ export default function AdminSellerDetailPage() {
                 </Button>
               </>
             )}
+            {seller.owner && (
             <Link href={`/admin/users/${seller.owner.id}`}>
               <Button variant="outline" size="sm">
                 View Owner <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
               </Button>
             </Link>
+            )}
           </div>
         </div>
       </div>

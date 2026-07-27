@@ -88,7 +88,15 @@ function AlertCard({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className="text-sm font-semibold text-ink-900 capitalize">{type.replace(/_/g, ' ')}</p>
-          <Badge variant={severity === 'high' ? 'destructive' : severity === 'medium' ? 'warning' : 'secondary'} className="text-[10px] uppercase">
+          <Badge
+            variant="outline"
+            className={cn(
+              'text-[10px] uppercase',
+              severity === 'high' && 'border-red-200 bg-red-50 text-red-700',
+              severity === 'medium' && 'border-amber-200 bg-amber-50 text-amber-700',
+              severity !== 'high' && severity !== 'medium' && 'bg-ink-100 text-ink-600 border-transparent',
+            )}
+          >
             {severity}
           </Badge>
         </div>
@@ -304,13 +312,13 @@ export default function AdminPlatformSecurityPage() {
             <StatCard
               icon={<Users className="h-6 w-6" />}
               label="Role Changes (7d)"
-              value={data.roleChanges}
-              variant={data.roleChanges > 0 ? 'amber' : 'neutral'}
+              value={data.roleChanges.last7d}
+              variant={data.roleChanges.last7d > 0 ? 'amber' : 'neutral'}
             />
             <StatCard
               icon={<Shield className="h-6 w-6" />}
               label="Admin Actions (7d)"
-              value={data.adminActions}
+              value={data.adminActions.last7d}
             />
             <StatCard
               icon={<Clock className="h-6 w-6" />}

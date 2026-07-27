@@ -128,7 +128,7 @@ export default function PayoutsPage() {
             <div className="rounded-2xl border border-ink-100 bg-white p-6">
               <p className="text-xs font-medium uppercase tracking-wide text-ink-400 mb-1">Total earned</p>
               <p className="font-display text-3xl font-semibold text-ink-900">{formatINR(balance + held)}</p>
-              <p className="text-xs text-ink-500 mt-2">Lifetime earnings on Reloom</p>
+              <p className="text-xs text-ink-500 mt-2">Lifetime earnings on Thrift Store</p>
             </div>
           </div>
 

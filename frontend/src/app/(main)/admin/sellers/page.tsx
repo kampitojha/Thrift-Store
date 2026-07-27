@@ -313,8 +313,8 @@ export default function AdminSellersPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <p className="text-ink-900">{seller.owner.displayName || seller.owner.username}</p>
-                      <p className="text-xs text-ink-400">{seller.owner.email}</p>
+                      <p className="text-ink-900">{seller.owner?.displayName || seller.owner?.username || 'N/A'}</p>
+                      <p className="text-xs text-ink-400">{seller.owner?.email || '—'}</p>
                     </td>
                     <td className="px-4 py-3">
                       <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium', VERIFICATION_STYLES[seller.verificationStatus] || 'bg-ink-100 text-ink-600')}>
@@ -376,7 +376,7 @@ export default function AdminSellersPage() {
                         <Badge variant="success" className="text-[10px]">Verified</Badge>
                       )}
                     </div>
-                    <p className="text-xs text-ink-400 truncate">{seller.owner.displayName || seller.owner.username}</p>
+                    <p className="text-xs text-ink-400 truncate">{seller.owner?.displayName || seller.owner?.username || 'N/A'}</p>
                   </div>
                 </div>
                 <div className="mt-3 flex items-center justify-between text-xs">

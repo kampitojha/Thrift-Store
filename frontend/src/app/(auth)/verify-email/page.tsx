@@ -64,7 +64,7 @@ function VerifyEmailContent() {
           </div>
           <h1 className="font-display text-2xl font-semibold text-ink-900">Email verified!</h1>
           <p className="mt-2 text-sm text-ink-500">{message}</p>
-          <Link href="/"><Button variant="brand" className="mt-6 w-full">Continue to Reloom</Button></Link>
+          <Link href="/"><Button variant="brand" className="mt-6 w-full">Continue to Thrift Store</Button></Link>
         </>
       )}
       {status === 'error' && (

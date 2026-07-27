@@ -55,7 +55,7 @@ export default function MessagesPage() {
       .then((res) => {
         const convs = Array.isArray(res) ? res : ((res as any).data ?? []);
         setConversations(convs);
-        convs.forEach((c) => {
+        convs.forEach((c: Conversation) => {
           const other = c.participants.find((p) => p.user.id !== user.id)?.user;
           if (other) {
             const s = getSocket();

@@ -83,12 +83,13 @@ async function bootstrap() {
     }),
   );
 
-  app.useGlobalFilters(new AllExceptionsFilter());
+  const allExceptionsFilter = app.get(AllExceptionsFilter);
+  app.useGlobalFilters(allExceptionsFilter);
   app.useGlobalInterceptors(new ResponseInterceptor());
 
   if (config.get('NODE_ENV') !== 'production') {
     const swaggerConfig = new DocumentBuilder()
-      .setTitle('Reloom API')
+      .setTitle('Thrift Store API')
       .setDescription('Premium thrift marketplace — production API')
       .setVersion('1.0')
       .addBearerAuth()
@@ -103,7 +104,7 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   await app.listen(port, '0.0.0.0');
-  logger.log(`Reloom API running on http://localhost:${port}/${apiPrefix}`, 'Bootstrap');
+  logger.log(`Thrift Store API running on http://localhost:${port}/${apiPrefix}`, 'Bootstrap');
   logger.log(`Swagger docs: http://localhost:${port}/docs`, 'Bootstrap');
 }
 

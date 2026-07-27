@@ -54,7 +54,7 @@ export default function ReferralsPage() {
 
   const shareVia = (platform: string) => {
     if (!data?.code) return;
-    const text = `Join me on Reloom - the best thrift marketplace! Use my referral code: ${data.code}`;
+    const text = `Join me on Thrift Store - the best thrift marketplace! Use my referral code: ${data.code}`;
     const url = `${window.location.origin}/sign-up?ref=${data.code}`;
     const urls: Record<string, string> = {
       whatsapp: `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`,

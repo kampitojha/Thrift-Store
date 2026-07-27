@@ -358,12 +358,14 @@ export default function AdminBackupsPage() {
                 </div>
               </div>
               {entry.fileUrl && (
-                <Button variant="outline" size="sm" asChild>
-                  <a href={entry.fileUrl} download={entry.fileName || undefined}>
-                    <Download className="mr-1 h-4 w-4" />
-                    Download
-                  </a>
-                </Button>
+                <a
+                  href={entry.fileUrl}
+                  download={entry.fileName || undefined}
+                  className="inline-flex items-center justify-center rounded-xl border border-ink-200 bg-white px-3 py-1.5 text-sm font-medium text-ink-700 shadow-sm transition-colors hover:bg-ink-50 hover:text-ink-900"
+                >
+                  <Download className="mr-1.5 h-4 w-4" />
+                  Download
+                </a>
               )}
             </div>
             {entry.notes && (

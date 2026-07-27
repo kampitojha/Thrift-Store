@@ -3,7 +3,7 @@ import * as bcrypt from 'bcrypt';
 import { MeiliSearch } from 'meilisearch';
 
 const prisma = new PrismaClient();
-const DEMO_PASSWORD = 'Reloom@123';
+const DEMO_PASSWORD = 'Thrift@123';
 
 const CATEGORIES = [
   { name: 'Clothing', slug: 'clothing', children: ['Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Ethnic Wear'] },
@@ -28,7 +28,7 @@ const BRANDS = [
 ];
 
 async function main() {
-  console.log('🌱 Seeding Reloom database...');
+  console.log('🌱 Seeding Thrift Store database...');
 
   for (const cat of CATEGORIES) {
     const parent = await prisma.category.upsert({
@@ -37,7 +37,7 @@ async function main() {
       create: {
         name: cat.name,
         slug: cat.slug,
-        description: `${cat.name} on Reloom`,
+        description: `${cat.name} on Thrift Store`,
         isActive: true,
       },
     });
@@ -75,12 +75,12 @@ async function main() {
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 12);
 
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@reloom.com' },
+    where: { email: 'admin@thriftstore.com' },
     update: { passwordHash },
     create: {
       email: 'admin@reloom.com',
       username: 'reloom_admin',
-      displayName: 'Reloom Admin',
+      displayName: 'Thrift Store Admin',
       passwordHash,
       role: UserRole.SUPER_ADMIN,
       emailVerifiedAt: new Date(),
@@ -270,7 +270,7 @@ async function main() {
       {
         slug: 'terms',
         title: 'Terms of Service',
-        content: '# Terms of Service\n\nWelcome to Reloom...',
+        content: '# Terms of Service\n\nWelcome to Thrift Store...',
       },
       {
         slug: 'privacy',
@@ -284,14 +284,14 @@ async function main() {
   await prisma.faq.createMany({
     data: [
       {
-        question: 'How does selling on Reloom work?',
+        question: 'How does selling on Thrift Store work?',
         answer: 'Create a seller profile, list your items with photos, and ship when you get an order. We handle payments securely.',
         category: 'selling',
         sortOrder: 1,
       },
       {
         question: 'What is the platform commission?',
-        answer: 'Reloom charges a competitive commission on each successful sale. Verified sellers may get reduced rates.',
+        answer: 'Thrift Store charges a competitive commission on each successful sale. Verified sellers may get reduced rates.',
         category: 'selling',
         sortOrder: 2,
       },

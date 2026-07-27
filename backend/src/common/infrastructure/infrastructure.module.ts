@@ -8,6 +8,7 @@ import { CorrelationIdMiddleware } from './correlation-id.middleware';
 import { LoggingMiddleware } from './logging.middleware';
 import { SentryService } from './sentry.service';
 import { OpenTelemetryService } from './opentelemetry.service';
+import { AllExceptionsFilter } from '../filters/all-exceptions.filter';
 
 @Global()
 @Module({
@@ -21,6 +22,7 @@ import { OpenTelemetryService } from './opentelemetry.service';
     LoggingMiddleware,
     SentryService,
     OpenTelemetryService,
+    AllExceptionsFilter,
   ],
   exports: [
     CacheService,
@@ -32,6 +34,7 @@ import { OpenTelemetryService } from './opentelemetry.service';
     LoggingMiddleware,
     SentryService,
     OpenTelemetryService,
+    AllExceptionsFilter,
   ],
 })
 export class InfrastructureModule {}

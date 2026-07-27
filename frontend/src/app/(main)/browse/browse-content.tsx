@@ -123,9 +123,9 @@ export function BrowsePage() {
     sort: searchParams.get('sort') || 'newest',
   }));
 
-  const [products, setProducts] = useState<ProductLike[]>([]);
+  const [products, setProducts] = useState<ProductLike[]>(DEMO_PRODUCTS);
   const [categories, setCategories] = useState<CategoryTree[]>([]);
-  const [meta, setMeta] = useState<PaginationMeta | null>(null);
+  const [meta, setMeta] = useState<PaginationMeta | null>({ page: 1, limit: 24, total: DEMO_PRODUCTS.length, totalPages: 1, hasNext: false, hasPrev: false });
   const [loading, setLoading] = useState(true);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [page, setPage] = useState(() => parseInt(searchParams.get('page') || '1'));
@@ -591,3 +591,94 @@ function FilterSection({
     </div>
   );
 }
+
+const DEMO_PRODUCTS: ProductLike[] = [
+  {
+    id: 'd1',
+    title: 'Nike Air Force 1 Low White — Size UK 9',
+    slug: 'nike-air-force-1-low-white-uk9',
+    pricePaise: 549900,
+    originalPricePaise: 899900,
+    brandName: 'Nike',
+    city: 'Mumbai',
+    thumbnailUrl: 'https://placehold.co/600x750/1a1a1a/fff?text=Nike+AF1',
+    seller: { id: 's1', username: 'vintage_vault', isVerified: true },
+  },
+  {
+    id: 'd2',
+    title: "Vintage Levi's 501 Denim Jacket — M",
+    slug: 'vintage-levis-501-denim-jacket-m',
+    pricePaise: 249900,
+    originalPricePaise: 499900,
+    brandName: "Levi's",
+    city: 'Delhi',
+    thumbnailUrl: 'https://placehold.co/600x750/2c3e50/fff?text=Levis',
+    seller: { id: 's1', username: 'vintage_vault', isVerified: true },
+  },
+  {
+    id: 'd3',
+    title: 'Zara Oversized Blazer — Black — S',
+    slug: 'zara-oversized-blazer-black-s',
+    pricePaise: 189900,
+    originalPricePaise: 399900,
+    brandName: 'Zara',
+    city: 'Bangalore',
+    thumbnailUrl: 'https://placehold.co/600x750/111/fff?text=Zara',
+    seller: { id: 's2', username: 'style_edit', isVerified: false },
+  },
+  {
+    id: 'd4',
+    title: 'Casio Vintage Digital Watch A168',
+    slug: 'casio-vintage-a168',
+    pricePaise: 299900,
+    originalPricePaise: 449900,
+    brandName: 'Casio',
+    city: 'Pune',
+    thumbnailUrl: 'https://placehold.co/600x750/333/fff?text=Casio',
+    seller: { id: 's3', username: 'timepiece_in', isVerified: true },
+  },
+  {
+    id: 'd5',
+    title: 'Adidas Samba OG — Core Black — UK 8',
+    slug: 'adidas-samba-og-black-uk8',
+    pricePaise: 799900,
+    originalPricePaise: 1099900,
+    brandName: 'Adidas',
+    city: 'Bangalore',
+    thumbnailUrl: 'https://placehold.co/600x750/222/fff?text=Adidas+Samba',
+    seller: { id: 's4', username: 'sneakerhead_in', isVerified: true },
+  },
+  {
+    id: 'd6',
+    title: 'Vintage Ray-Ban Wayfarer Sunglasses',
+    slug: 'vintage-ray-ban-wayfarer',
+    pricePaise: 449900,
+    originalPricePaise: 899900,
+    brandName: 'Ray-Ban',
+    city: 'Mumbai',
+    thumbnailUrl: 'https://placehold.co/600x750/1a1a2e/fff?text=Ray-Ban',
+    seller: { id: 's2', username: 'style_edit', isVerified: false },
+  },
+  {
+    id: 'd7',
+    title: 'Uniqlo White Linen Shirt — M',
+    slug: 'uniqlo-white-linen-shirt-m',
+    pricePaise: 129900,
+    originalPricePaise: 249900,
+    brandName: 'Uniqlo',
+    city: 'Delhi',
+    thumbnailUrl: 'https://placehold.co/600x750/f5f5f0/333?text=Linen',
+    seller: { id: 's1', username: 'vintage_vault', isVerified: true },
+  },
+  {
+    id: 'd8',
+    title: 'MacBook Air M1 2020 — Space Grey — 8GB/256GB',
+    slug: 'macbook-air-m1-2020',
+    pricePaise: 5499900,
+    originalPricePaise: 9299900,
+    brandName: 'Apple',
+    city: 'Hyderabad',
+    thumbnailUrl: 'https://placehold.co/600x750/333/fff?text=MacBook+Air',
+    seller: { id: 's5', username: 'gadget_guru', isVerified: true },
+  },
+];

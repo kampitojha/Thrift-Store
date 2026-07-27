@@ -26,7 +26,7 @@ export class TwoFactorController {
   @Post('setup')
   @ApiOperation({ summary: 'Start 2FA setup' })
   async setup(@CurrentUser() user: AuthUser) {
-    const secret = speakeasy.generateSecret({ name: `Reloom:${user.email}` });
+    const secret = speakeasy.generateSecret({ name: `Thrift Store:${user.email}` });
     const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url || '');
     return { secret: secret.base32, qrCodeUrl };
   }

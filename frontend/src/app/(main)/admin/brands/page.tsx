@@ -34,7 +34,7 @@ type Brand = {
 };
 
 type BrandsResponse = {
-  items: Brand[];
+  data: Brand[];
   meta: { total: number; page: number; limit: number; totalPages: number };
 };
 
@@ -95,7 +95,7 @@ export default function AdminBrandsPage() {
         if (search) params.set('q', search);
         if (isActiveFilter) params.set('isActive', isActiveFilter);
         const res = await apiClient.get<BrandsResponse>(`/admin/brands?${params}`);
-        setBrands(res.items);
+        setBrands(res.data);
         setMeta(res.meta);
       } catch {
         setError('Failed to load brands');
