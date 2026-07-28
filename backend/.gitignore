@@ -5,6 +5,6 @@ dist
 *.log
 *.tsbuildinfo
 coverage
-uploads
+/uploads
 tmp
 .cache
