@@ -4,7 +4,9 @@
   "scripts": {
     "prepare": "husky",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md,css}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,css}\""
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,css}\"",
+    "build": "cd backend && npm ci && npx prisma generate && npm run build",
+    "start": "cd backend && node dist/main.js"
   },
   "devDependencies": {
     "husky": "^9.1.7",
