@@ -10,6 +10,7 @@
     "start:prod": "node dist/main.js",
     "typecheck": "tsc --noEmit",
     "clean": "rimraf dist",
+    "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
